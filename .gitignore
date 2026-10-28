@@ -1,0 +1,13 @@
+# Credenciales y variables de entorno locales
+.env
+.env.*
+*.local.json
+
+# Configuración local de Claude Code
+.claude/settings.local.json
+
+# Sistema operativo / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
