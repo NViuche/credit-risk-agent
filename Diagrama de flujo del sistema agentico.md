@@ -14,12 +14,12 @@ graph TD
     end
 
     subgraph CAPA_HERRAMIENTAS [Protocolo de Herramientas & Logica]
-        MCP[Servidor MCP MySQL - Herramientas SQL de solo lectura]
+        DATA[Acceso a datos - pendiente de definir]
         SKILL[Skill Propia: Risk Score Engine]
     end
 
     subgraph CAPA_DATOS [Capa de Persistencia]
-        DB[(MySQL local de XAMPP: bi_riesgo_crediticio)]
+        DB[(Fuente de datos - pendiente de definir)]
     end
 
     subgraph CAPA_SALIDA [Resultados & Entregables BI]
@@ -30,7 +30,6 @@ graph TD
     %% Flujo de Ejecución Sequencial
     UI -->|1. Consulta: "Analiza el riesgo de impago del mes"| AGENT
     
-    AGENT -->|2. Identifica necesidad de datos| MCP
-    MCP -->|3. Consulta SQL: SELECT facturas + métricas| DB
-    DB -->|4. Retorna registros de facturas y clientes| MCP
-    MCP -->|5. Entrega datos estructurados| AGENT
+    AGENT -->|2. Identifica necesidad de datos| DATA
+    DATA -.->|Conexión por definir| DB
+    DATA -->|3. Entrega datos estructurados| AGENT
