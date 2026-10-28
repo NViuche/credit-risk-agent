@@ -3,6 +3,11 @@
     "supabase": {
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=ocigjzqtakriuajyfnbx&read_only=true&features=database,docs,debugging,development"
+    },
+    "credit-risk": {
+      "type": "stdio",
+      "command": "python",
+      "args": ["backend/mcp_server.py"]
     }
   }
 }

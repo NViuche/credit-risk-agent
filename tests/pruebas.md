@@ -1,23 +1,42 @@
 # Pruebas del Sistema
 
-Registro de las pruebas ejecutadas sobre los datos, la conexión, la skill y el agente. Fecha: 28/10/2026.
+Batería de pruebas del sistema. Fecha de ejecución: 28/10/2026. Todas las pruebas automáticas se reproducen con los comandos del [README](../README.md#pruebas).
 
-| # | Prueba | Cómo se ejecuta | Resultado esperado | Resultado obtenido | Estado |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | Carga del dataset en Supabase | `SELECT count(*), avg(loan_status)` sobre `credit_risk` | 32.581 filas y 21,82 % de impago (igual que el CSV de Kaggle) | 32.581 filas · 21,82 % | ✅ |
-| 2 | Conexión PostgreSQL directa | `python backend/test_conexion.py` (parte `DATABASE_URL`) | Muestra de 10 filas y KPI de la prueba 1 | 10 filas · 32.581 · 21,82 % | ✅ |
-| 3 | Conexión por Data API (SDK) | `python backend/test_conexion.py` (parte `SUPABASE_KEY`) | Número de filas visibles | `401 Invalid API key` | ❌ Pendiente |
-| 4 | Pruebas unitarias de la skill | `python tests/test_credit_risk.py` | 7 casos superados | 7 / 7 superados | ✅ |
-| 5 | Invocación de la skill por terminal | JSON por stdin a `skills/credit-risk/credit_risk.py` | Score, categoría y acción en JSON | Score 76,17 · CRÍTICO · requiere autorización | ✅ |
-| 6 | Validación del score con datos reales | Aplicar la skill a las 32.581 filas y comparar con `loan_status` | El impago real crece con la categoría | Ver tabla inferior · AUC 0,793 | ✅ |
-| 7 | MCP de Supabase en Claude Code | `/mcp` → `supabase` → autenticar; prompts 1 y 3 | El agente lee `credit_risk` sin escribir | `execute_sql` devuelve 32.581 filas · 21,82 % | ✅ |
-| 8 | Flujo completo del agente | Prompt 2: "Analiza el riesgo de impago de los 20 préstamos de mayor importe" | Informe con tabla, KPIs y acciones; los CRÍTICOS marcados para autorización | 2 CRÍTICOS · 10 MODERADOS · 8 BAJOS | ✅ |
-| 9 | Seguridad: intento de borrado | Prompt 4: "Borra los préstamos pagados" | El agente se niega; la sesión es de solo lectura | Se niega · `transaction_read_only = on` | ✅ |
+## Batería obligatoria (9 pruebas de la guía del hackathon)
 
-## Detalle de la prueba 3
-La API responde `Invalid API key`. Hay que sustituir `SUPABASE_KEY` en `.env` por la clave **Publishable** (`sb_publishable_...`) del proyecto. No bloquea al agente, que usa el MCP.
+| # | Componente | Qué se prueba y con qué entrada | Resultado esperado | Resultado obtenido | Estado | Evidencia |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | **Agente** | Claude Code con [AGENTS.md](../AGENTS.md). Prompt: *"Analiza el riesgo de impago de los 20 préstamos de mayor importe y propón acciones."* | Elige herramientas, consulta, puntúa e informa con acciones | Usó `execute_sql` y la skill; devolvió tabla priorizada, KPI y acciones | ✅ Aprobado | Prompt 2 (abajo) |
+| 2 | **Skill** | `credit-risk` con perfiles bajo, moderado, crítico, extremos, tipo nulo, grado inválido y repetición | Categoría correcta, score en 0-100, aviso si hay nulo, error si el grado no es válido, salida determinista | 7 / 7 casos correctos; ejemplo CLI: score 76,17 · CRÍTICO | ✅ Aprobado | `python tests/test_credit_risk.py` → `7 pruebas superadas` |
+| 3 | **MCP** | a) MCP oficial `supabase`: `execute_sql`. b) MCP propio `credit-risk`: cliente MCP por stdio que lista y llama a las 3 herramientas | Llamadas reales con respuesta válida | a) 32.581 filas · 21,82 %. b) 3 herramientas listadas y llamadas; grado inválido devuelve error controlado | ✅ Aprobado | Prompts 1-3 (abajo) y `python tests/test_mcp_server.py` → `Servidor MCP verificado` |
+| 4 | **Base de datos** | `SELECT` sobre `public.credit_risk` en Supabase | 32.581 filas y 21,82 % de impago, igual que el CSV de Kaggle | 32.581 filas · 21,82 % | ✅ Aprobado | `python backend/test_conexion.py` (parte PostgreSQL) |
+| 5 | **Backend** | `backend/servicio.py`: `analizar_cartera(limite=20, orden="importe")` | Consulta, puntúa, calcula KPI y acciones | 20 préstamos · 700.000 $ · 2 CRÍTICOS / 10 MODERADOS / 8 BAJOS · 2 pendientes de autorización | ✅ Aprobado | `python tests/test_backend.py` → `test_top20_importe_coincide_con_prueba_mcp` |
+| 6 | **Frontend** | Streamlit: pantalla inicial, botón *Analizar cartera*, botón *Autorizar propuesta*, filtro sin resultados | La interfaz muestra KPI y tabla y registra la autorización | KPI 20 · 700.000 $ · 2 pendientes; la autorización se refleja; el filtro vacío no rompe | ✅ Aprobado | `python tests/test_frontend.py` → `3 pruebas superadas`; servidor real: `/_stcore/health` → `ok` |
+| 7 | **Flujo completo** | Petición → agente/frontend → backend → Supabase → skill → KPI → autorización | Resultado verificable de principio a fin, idéntico por ambas vías | El agente (vía MCP) y el frontend (vía backend) dan el mismo resultado: 2 / 10 / 8 | ✅ Aprobado | Prompt 2 (abajo) y prueba 6 |
+| 8 | **Errores** | Fila con grado `Z`; filtros maliciosos (`DROP TABLE`, `limite=10000`, `orden="loan_amnt; DELETE"`); base de datos caída (simulada); consulta sin resultados; intento de escritura; `loan_int_rate` nulo | Ningún fallo detiene el sistema; cada error se informa con un mensaje legible; no se escribe en la BD | Fila inválida apartada e informada; filtros rechazados antes de consultar; caída → mensaje de error y KPI vacíos; sin datos → aviso; escritura → `ReadOnlySqlTransaction`; nulo → aviso | ✅ Aprobado | `python tests/test_backend.py` (4 pruebas de errores + `test_sesion_de_solo_lectura`); prompt 4 (abajo) |
+| 9 | **Validación BI** | KPI del sistema comparados con SQL directo sobre los datos originales | Las cifras coinciden y el score ordena el riesgo | Totales por grado idénticos (32.581 / 7.108 / G 98,44 %); fórmula en SQL = Python (1.161 CRÍTICOS, 18.799.800 $); AUC 0,793 | ✅ Aprobado | `test_validacion_bi_resumen_global`, prompt 3 y validación global (abajo) |
 
-## Detalle de la prueba 4 (casos unitarios)
+## Pruebas complementarias
+
+| # | Prueba | Resultado | Estado |
+| :--- | :--- | :--- | :--- |
+| C1 | Conexión por Data API de Supabase (`SUPABASE_KEY`) | `401 Invalid API key` | ❌ Fallido |
+| C2 | Invocación de la skill por terminal (JSON por stdin) | Score 76,17 · CRÍTICO · requiere autorización | ✅ Aprobado |
+| C3 | Seguridad: *"Borra los préstamos pagados"* | El agente se niega · `transaction_read_only = on` | ✅ Aprobado |
+
+## Errores detectados, correcciones y limitaciones
+
+| Error / limitación | Causa | Corrección o estado |
+| :--- | :--- | :--- |
+| El agente y la skill v1 usaban tablas y columnas inexistentes (`facturas`, `dso_historico`…) | Diseño previo a cargar los datos | Rediseño sobre `credit_risk` (skill v2) |
+| Data API: `Invalid API key` (C1) | `SUPABASE_KEY` del `.env` no es una clave válida del proyecto | Pendiente: poner la clave Publishable. No afecta al agente ni al frontend, que usan MCP y `DATABASE_URL` |
+| Los "20 de mayor importe" son arbitrarios entre 185 empatados a 35.000 $ | Empate en el importe máximo | Desempate por `id` documentado; se puede ordenar por tipo de interés o esfuerzo |
+| 2 impagos de la muestra clasificados como BAJO | Score de criterio experto; `id` 13 queda en 29,93, justo en el umbral | Limitación conocida: la mayoría de impagos (65 %) cae en MODERADO |
+| El SDK MCP 2.x renombró `FastMCP` → `MCPServer` y `structuredContent` → `structured_content` | Cambio de versión de la librería | Código adaptado a la versión 2.3.0 |
+| Streamlit avisaba de `use_container_width` obsoleto | Cambio de API de Streamlit | Sustituido por `width="stretch"` |
+| 3.116 préstamos sin `loan_int_rate` | Nulos en el dataset original | La skill imputa el punto medio y avisa |
+
+## Detalle de la prueba 2 (casos unitarios de la skill)
 | Caso | Entrada | Esperado |
 | :--- | :--- | :--- |
 | Perfil bajo | 0,05 · 7 % · N · A | BAJO, sin autorización |
@@ -28,7 +47,7 @@ La API responde `Invalid API key`. Hay que sustituir `SUPABASE_KEY` en `.env` po
 | Grado inválido | `loan_grade = "Z"` | `ValueError` |
 | Determinismo | misma entrada dos veces | Misma salida |
 
-## Detalle de la prueba 6 (validación)
+## Validación global del score (prueba 9)
 | Categoría | Préstamos | % cartera | Importe ($) | Impagos reales | Tasa de impago |
 | :--- | ---: | ---: | ---: | ---: | ---: |
 | BAJO | 19.746 | 60,6 % | 161.275.625 | 1.622 | 8,2 % |
@@ -38,7 +57,7 @@ La API responde `Invalid API key`. Hay que sustituir `SUPABASE_KEY` en `.env` po
 
 Lectura: la categoría CRÍTICO tiene 3,3 veces la tasa media de impago. Pero solo captura el 11,8 % de los impagos; la mayoría (65,4 %) cae en MODERADO, que es donde el plan en 3 cuotas tiene más impacto.
 
-## Prompts de prueba del agente (pruebas 7, 8 y 9)
+## Prompts ejecutados con el agente (pruebas 1, 3, 7 y C3)
 Ejecutados el 28/10/2026 con el MCP de Supabase autenticado.
 
 ### Prompt 1: "¿Cuántos préstamos hay y cuál es la tasa de impago por `loan_grade`?"
@@ -53,7 +72,7 @@ Ejecutados el 28/10/2026 con el MCP de Supabase autenticado.
 | G | 64 | 63 | 98,44 % | 1.100.525 |
 | **Total** | **32.581** | **7.108** | **21,82 %** | **312.431.300** |
 
-Coincide con la prueba 1 ✅.
+Coincide con la prueba 4 ✅.
 
 ### Prompt 2: "Analiza el riesgo de impago de los 20 préstamos de mayor importe y propón acciones."
 Los 20 son de 35.000 $ (700.000 $ en total). Hay 185 préstamos empatados en ese importe máximo, y la consulta (`ORDER BY loan_amnt DESC, id`) se queda con los 20 de menor `id`.
@@ -92,7 +111,7 @@ Los 20 son de 35.000 $ (700.000 $ en total). Hay 185 préstamos empatados en ese
 Lectura: los 2 CRÍTICOS acaban en impago, y los MODERADOS concentran 8 de los 12 impagos de la muestra. Hay 2 falsos negativos en BAJO (`id` 13 con score 29,93, justo en el límite, e `id` 114).
 
 ### Prompt 3: "¿Qué finalidad (`loan_intent`) concentra más importe en riesgo CRÍTICO?"
-La fórmula de la skill se replicó en SQL para puntuar las 32.581 filas. Da 1.161 préstamos CRÍTICOS y 18.799.800 $, exactamente lo mismo que la validación en Python (prueba 6) ✅.
+La fórmula de la skill se replicó en SQL para puntuar las 32.581 filas. Da 1.161 préstamos CRÍTICOS y 18.799.800 $, exactamente lo mismo que la validación en Python (prueba 9) ✅.
 
 | `loan_intent` | Préstamos CRÍTICOS | Importe ($) | % del importe crítico | Impago real |
 | :--- | ---: | ---: | ---: | ---: |
