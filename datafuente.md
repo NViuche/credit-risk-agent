@@ -3,7 +3,7 @@
 ## 1. Fuente y Origen de los Datos
 * **Nombre del Dataset Original:** Credit Risk Dataset.
 * **Fuente:** Kaggle (público / open data).
-* **Entorno de Despliegue:** MySQL / MariaDB (XAMPP - Motor InnoDB, Codificación `utf8mb4`).
+* **Entorno de Despliegue:** Supabase (PostgreSQL gestionado).
 * **Contexto de Dominio:** Adaptación B2B/Fintech para evaluar la morosidad, capacidad crediticia y días de mora acumulados en la cartera de cobros.
 
 ---
@@ -18,3 +18,26 @@
 ## 3. Estructura de la Base de Datos (Modelo Relacional)
 
 La base de datos relacional `bi_riesgo_crediticio` consta de tres tablas interconectadas mediante claves foráneas:
+
+```text
+┌───────────────────────────┐         ┌───────────────────────────┐
+│ clientes                  │         │ facturas                  │
+├───────────────────────────┤         ├───────────────────────────┤
+│ PK cliente_id             │◄────┬───┤ FK cliente_id             │
+│    nombre_empresa         │     │   │ PK factura_id             │
+│    sector                 │     │   │    monto                  │
+│    limite_credito         │     │   │    fecha_emision          │
+│    fecha_alta             │     │   │    fecha_vencimiento      │
+└───────────────────────────┘     │   │    estado                 │
+                                  │   │    dias_retraso_pago      │
+                                  │   └───────────────────────────┘
+┌───────────────────────────┐     │
+│ metricas_riesgo           │     │
+├───────────────────────────┤     │
+│ PK,FK cliente_id          ├─────┘
+│    dso_historico          │
+│    porcentaje_credito     │
+│    score_buro_credito     │
+│    incidentes_pago_6m     │
+└───────────────────────────┘
+```

@@ -1,7 +1,13 @@
 # Credenciales y variables de entorno locales
 .env
 .env.*
+!.env.example
 *.local.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
 
 # Configuración local de Claude Code
 .claude/settings.local.json

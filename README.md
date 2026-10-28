@@ -1,5 +1,25 @@
 # Credit Risk & Default Intelligence
 
-Proyecto de análisis de riesgo crediticio. La conexión desde VS Code/Copilot hacia MySQL de XAMPP está deshabilitada; este repositorio no configura ni inicia un servidor MCP para la base de datos.
+Proyecto de análisis de riesgo crediticio conectado a Supabase (PostgreSQL). La conexión anterior con MySQL de XAMPP no forma parte de este flujo.
 
-La arquitectura y la fuente de datos quedan pendientes de los nuevos planes del proyecto. No se modificaron la base `bi_riesgo_crediticio`, sus tablas ni los usuarios de MySQL.
+## Preparación
+
+1. Usa Python 3.12 o compatible.
+2. Instala las dependencias:
+
+   ```powershell
+   python -m pip install -r requirements.txt
+   ```
+
+3. Configura `.env` con `SUPABASE_URL`, `SUPABASE_KEY` y `DATABASE_URL`. Usa `.env.example` como referencia. No compartas ni subas `.env` a Git.
+4. Comprueba las conexiones:
+
+   ```powershell
+   python test_conexion.py
+   ```
+
+El script prueba la tabla `credit_risk` mediante el SDK de Supabase y luego ejecuta una consulta PostgreSQL de solo lectura con `DATABASE_URL`. El SDK consulta la Data API; `DATABASE_URL` conecta directamente con PostgreSQL. Son dos vías de acceso distintas. La clave configurada debe tener permisos de lectura para la tabla; si la API devuelve un error de permisos, revisa que la tabla esté expuesta y sus políticas RLS permitan el `SELECT` correspondiente.
+
+El resultado de la Data API informa cuántas filas son visibles para la clave y sus políticas. Un valor cero puede indicar una tabla vacía o que las políticas RLS no permiten ver filas.
+
+Si aparece `Invalid API key`, sustituye `SUPABASE_KEY` por la clave **Publishable** del mismo proyecto Supabase (o una clave `anon` heredada válida). No uses la contraseña de PostgreSQL como API key ni publiques una clave `service_role`/secret.
