@@ -20,3 +20,6 @@ desktop.ini
 
 # Configuración local de Obsidian
 .obsidian/
+
+# Archivos temporales de Office (documento abierto)
+~$*

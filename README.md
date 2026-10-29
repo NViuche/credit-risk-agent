@@ -71,6 +71,7 @@ credit-risk-agent/
 │   └── test_*.py                      Pruebas automáticas
 ├── presentacion/
 │   ├── CreditGuard_AI.pptx            Diapositivas del proyecto
+│   ├── CreditGuard_AI_v2.pptx         Diapositivas con el estilo de la web de resultados
 │   └── creditguard_web.html           Web de resultados (publicada en claude.ai)
 └── REFLEXION.md                       Reflexión individual y de equipo
 ```
