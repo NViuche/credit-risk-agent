@@ -43,7 +43,7 @@
 5. **¿Qué haría diferente la próxima vez?**
    ✍️
 
-### Integrante: Santiago Nicolás Viuche Pinilla
+### Integrante: Santiago Nicolas Viuche Pinilla
 1. **¿Qué he aprendido?**
    ✍️
 2. **¿Qué me llevo y cómo lo aplicaré?**

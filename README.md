@@ -2,45 +2,77 @@
 
 Sistema agéntico de Business Intelligence que analiza una cartera real de **32.581 préstamos** en Supabase y puntúa su riesgo de impago con una Skill propia. Después propone acciones de cobro; las críticas requieren autorización humana.
 
-```text
-Usuario / Interfaz ──► Agente coordinador ──► Skill + MCP + Datos ──► Backend ──► Resultado BI
-(Claude Code o         (AGENTS.md)            credit-risk · Supabase   servicio.py   KPI, tabla y
- Streamlit)                                                                          acciones
+## Arquitectura
+
+```mermaid
+flowchart TD
+    U["<b>Usuario / Interfaz</b><br/>Claude Code (lenguaje natural) · Web Streamlit (frontend/app.py)"]
+    A["<b>Agente coordinador · CreditGuard AI</b><br/>AGENTS.md · agents/creditguard.md<br/>Instrucciones, razonamiento y selección de herramientas"]
+
+    subgraph HERRAMIENTAS [" "]
+        S["<b>Skill</b><br/>credit-risk<br/>Score 0-100 y acción"]
+        M["<b>MCP</b><br/>supabase · execute_sql<br/>credit-risk · servidor propio"]
+        D[("<b>Datos</b><br/>Supabase PostgreSQL<br/>public.credit_risk · 32.581 filas")]
+    end
+
+    B["<b>Backend → Resultado BI</b><br/>backend/servicio.py<br/>KPI, tabla priorizada y acciones"]
+    H{"¿Score &gt; 65?"}
+    OK["Recordatorio o plan en 3 cuotas"]
+    AUT["Propuesta pendiente de<br/>autorización humana"]
+
+    U --> A
+    A --> S
+    A --> M
+    A -. vía MCP .-> D
+    S --> B
+    M --> B
+    D --> B
+    B --> H
+    H -- No --> OK
+    H -- Sí --> AUT
 ```
 
-## Estructura
+Todo el acceso a datos es de solo lectura. El agente (vía el MCP propio) y la web llaman al mismo `backend/servicio.py`, por eso dan el mismo resultado. Más detalle en [investigacion/diagrama_flujo_sistema_agentico.md](investigacion/diagrama_flujo_sistema_agentico.md).
+
+## Estructura del repositorio
 
 ```text
-README.md                      Este archivo
-GUIA.md                        Guía de uso: qué hace, cómo funciona, cómo usarlo y sus límites
-AGENTS.md                      Instrucciones del agente coordinador CreditGuard AI
-.env.example                   Variables de entorno necesarias (sin valores reales)
-.mcp.json                      Servidores MCP: supabase (oficial) y credit-risk (propio)
-investigacion/
-  mercado.md                   Mercado, competidores y oportunidad
-  problema.md                  5 problemas evaluados, usuario, propuesta de valor y KPI
-  diagrama_flujo_sistema_agentico.md
-  diseno_de_la_skill.md        Por qué la skill está diseñada así
-agents/creditguard.md          Definición del agente como subagente de Claude Code
-skills/credit-risk/
-  SKILL.md                     Skill: qué hace, entradas, salida y validación
-  credit_risk.py
-data/
-  fuente.md                    Origen, licencia y acceso a los datos
-  diccionario_de_datos.md      Columnas, calidad y sesgos
-backend/
-  db.py                        Acceso a Supabase en sesión de solo lectura
-  servicio.py                  Lógica de negocio: consulta, skill, KPI y errores
-  mcp_server.py                Servidor MCP propio (SDK oficial de MCP adaptado)
-  test_conexion.py             Prueba de conexión
-frontend/app.py                Interfaz web (Streamlit)
-config/settings.py             Rutas, .env y límites
-tests/
-  pruebas.md                   Batería de 9 pruebas con resultados y evidencias
-  test_*.py                    Pruebas automáticas
-REFLEXION.md                   Reflexión individual y de equipo
-presentacion/CreditGuard_AI.pptx  Diapositivas del proyecto
-presentacion/creditguard_web.html Web de resultados para negocio (publicada en claude.ai)
+credit-risk-agent/
+├── README.md                          Visión general, instalación y ejecución
+├── GUIA.md                            Guía de uso
+├── AGENTS.md                          Instrucciones del agente coordinador
+├── .env.example                       Variables de entorno (sin valores reales)
+├── .mcp.json                          Servidores MCP: supabase (oficial) y credit-risk (propio)
+├── investigacion/
+│   ├── mercado.md                     Mercado, competidores y oportunidad
+│   ├── problema.md                    5 problemas evaluados, usuario, propuesta de valor y KPI
+│   ├── diagrama_flujo_sistema_agentico.md
+│   └── diseno_de_la_skill.md          Por qué la skill está diseñada así
+├── agents/
+│   └── creditguard.md                 Agente como subagente de Claude Code
+├── skills/
+│   └── credit-risk/
+│       ├── SKILL.md                   Qué hace, entradas, salida y validación
+│       └── credit_risk.py             Fórmula del score
+├── data/
+│   ├── fuente.md                      Origen, licencia y acceso a los datos
+│   └── diccionario_de_datos.md        Columnas, calidad y sesgos
+├── backend/
+│   ├── db.py                          Acceso a Supabase en solo lectura
+│   ├── servicio.py                    Lógica de negocio: consulta, skill, KPI y errores
+│   ├── mcp_server.py                  Servidor MCP propio (SDK oficial de MCP)
+│   └── test_conexion.py               Prueba de conexión
+├── frontend/
+│   └── app.py                         Web en Streamlit
+├── config/
+│   └── settings.py                    Rutas, .env y límites
+├── tests/
+│   ├── pruebas.md                     9 pruebas obligatorias con evidencias
+│   └── test_*.py                      Pruebas automáticas
+├── presentacion/
+│   ├── CreditGuard_AI.pptx            Diapositivas del proyecto
+│   └── creditguard_web.html           Web de resultados (publicada en claude.ai)
+└── REFLEXION.md                       Reflexión individual y de equipo
 ```
 
 ¿Primera vez? Empieza por la [guía de uso](GUIA.md).
