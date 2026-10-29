@@ -140,7 +140,7 @@ Por finalidad, **Médica** concentra más importe en riesgo crítico (3,52 M$). 
 
 ## 7. Garantías: pruebas y seguridad
 - **9 de 9 pruebas obligatorias aprobadas:** agente, skill, MCP, base de datos, backend, web, flujo completo, gestión de errores y validación de las cifras. Cada una tiene su evidencia en [tests/pruebas.md](tests/pruebas.md).
-- **24 pruebas automáticas.** Se pueden repetir con los comandos del [README](README.md#pruebas).
+- **22 pruebas automáticas.** Se pueden repetir con los comandos del [README](README.md#pruebas).
 - **No modifica datos:** las conexiones son de solo lectura. Si se le pide borrar o cambiar algo, el agente se niega y la base de datos lo rechazaría igualmente.
 - **No ejecuta acciones críticas** sin que una persona las autorice.
 - **No inventa nombres ni fechas:** el dataset no los tiene.
