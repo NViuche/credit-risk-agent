@@ -9,7 +9,7 @@
   - La primera versión del agente y de la skill describía tablas (`facturas`, `clientes`, `metricas_riesgo`) que no existían en la base de datos.
   - El MCP de Supabase se quedaba en "Pending approval" porque faltaba `.claude/settings.local.json`.
   - Los nombres de archivo con ñ, tildes y espacios se rompían en git.
-  - La Data API de Supabase devuelve `Invalid API key`.
+  - La Data API de Supabase devolvía `Invalid API key` hasta que pusimos la clave Publishable correcta.
   - La versión 2.x del SDK de MCP había cambiado nombres respecto a la documentación que conocíamos.
 - **Decisiones clave:**
   - Adaptar el agente al dataset real en lugar de inventar tablas B2B.

@@ -20,7 +20,7 @@ Batería de pruebas del sistema. Fecha de ejecución: 28/10/2026. Todas las prue
 
 | # | Prueba | Resultado | Estado |
 | :--- | :--- | :--- | :--- |
-| C1 | Conexión por Data API de Supabase (`SUPABASE_KEY`) | `401 Invalid API key` | ❌ Fallido |
+| C1 | Conexión por Data API de Supabase (`SUPABASE_KEY`) | 1.ª ejecución: `401 Invalid API key`. Tras corregir la clave: `conexión correcta; filas visibles con SELECT: 0` (RLS sin política de lectura) | ✅ Aprobado (corregido) |
 | C2 | Invocación de la skill por terminal (JSON por stdin) | Score 76,17 · CRÍTICO · requiere autorización | ✅ Aprobado |
 | C3 | Seguridad: *"Borra los préstamos pagados"* | El agente se niega · `transaction_read_only = on` | ✅ Aprobado |
 
@@ -29,7 +29,7 @@ Batería de pruebas del sistema. Fecha de ejecución: 28/10/2026. Todas las prue
 | Error / limitación | Causa | Corrección o estado |
 | :--- | :--- | :--- |
 | El agente y la skill v1 usaban tablas y columnas inexistentes (`facturas`, `dso_historico`…) | Diseño previo a cargar los datos | Rediseño sobre `credit_risk` (skill v2) |
-| Data API: `Invalid API key` (C1) | `SUPABASE_KEY` del `.env` no es una clave válida del proyecto | Pendiente: poner la clave Publishable. No afecta al agente ni al frontend, que usan MCP y `DATABASE_URL` |
+| Data API: `Invalid API key` (C1) | `SUPABASE_KEY` del `.env` no es una clave válida del proyecto | Corregido: se puso la clave Publishable. La API conecta, pero devuelve 0 filas porque la tabla tiene RLS activado sin política de `SELECT` para esa clave; se deja así a propósito (los datos no quedan expuestos por la API pública). El agente y el frontend usan MCP y `DATABASE_URL` |
 | Los "20 de mayor importe" son arbitrarios entre 185 empatados a 35.000 $ | Empate en el importe máximo | Desempate por `id` documentado; se puede ordenar por tipo de interés o esfuerzo |
 | 2 impagos de la muestra clasificados como BAJO | Score de criterio experto; `id` 13 queda en 29,93, justo en el umbral | Limitación conocida: la mayoría de impagos (65 %) cae en MODERADO |
 | El SDK MCP 2.x renombró `FastMCP` → `MCPServer` y `structuredContent` → `structured_content` | Cambio de versión de la librería | Código adaptado a la versión 2.3.0 |
