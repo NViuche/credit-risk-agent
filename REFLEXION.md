@@ -21,15 +21,15 @@
 
 ### Integrante: Roberto Mario Brochero López
 1. **¿Qué he aprendido?**
-   ✍️
+   He aprendido que existen alternativas a Supabase, como Neon, que ofrece una opción para trabajar con bases de datos de forma gratuita y online, además de herramientas como Obsidian. Esto me ha permitido conocer otras herramientas que podemos utilizar en nuestros proyectos de análisis de datos de forma más accesible, ya que permiten alojar las bases de datos online, lo que facilita compartirlas y hace posible trabajar con ellas desde cualquier lugar.
 2. **¿Qué me llevo y cómo lo aplicaré?**
-   ✍️
+   Me llevo una nueva herramienta muy potente que brinda la posibilidad de crear agentes personalizados para resolver tareas específicas sin necesidad de ser experto en lenguajes de programación.
 3. **¿Dónde me he bloqueado y cómo lo he afrontado?**
-   ✍️
+   La conexión de las bases de datos fue bastante difícil, sobre todo al momento de conectar las credenciales o conceder permisos. Logré superar estos obstáculos con ayuda de la IA: preguntando cómo resolver esto o aquello, logré continuar con el proceso y utilizar herramientas que nunca había utilizado.
 4. **¿Qué he aportado al equipo?**
-   ✍️
+   He contribuido con ideas y desarrollando tareas específicas que fuimos repartiendo durante el desarrollo del ejercicio.
 5. **¿Qué haría diferente la próxima vez?**
-   ✍️
+   Buscaría la forma de dividir el trabajo de modo que pueda realizarse desde diferentes ordenadores de forma simultánea, combinando los desarrollos de cada uno en un único resultado. Seguramente lo haría con herramientas de control de versiones, donde cada uno puede tomar el proyecto desde el mismo punto y luego unificar los avances.
 
 ### Integrante: Sofía Montero Jara
 1. **¿Qué he aprendido?**
@@ -45,29 +45,29 @@
 
 ### Integrante: Santiago Nicolas Viuche Pinilla
 1. **¿Qué he aprendido?**
-   Integrar bases de datos subidas en la nube con VS y trabajando con el LLM de Claude, específicamente con Supabase, así aprender uso puntual del archivos JSON para el llamado de credenciales y posterior manejo de bases de datos
+   He aprendido a integrar bases de datos alojadas en la nube, específicamente Supabase, con VS Code y a trabajar con el LLM de Claude. También he aprendido el uso puntual de archivos JSON para el llamado de credenciales y el posterior manejo de las bases de datos.
 2. **¿Qué me llevo y cómo lo aplicaré?**
-   Me llevo el conocimiento de la conectividad entre VS con Supabase, así como haber aprendido a habilitar MCP desde VS y posterior maneja tras reinicio de ventanas.
+   Me llevo el conocimiento de la conectividad entre VS Code y Supabase, así como haber aprendido a habilitar MCP desde VS Code y a manejarlo tras reiniciar la ventana.
 3. **¿Dónde me he bloqueado y cómo lo he afrontado?**
-   En la implementación de Supabase, debido a que era una herramienta y propósito (llamado a BD en la nube) que no había usado antes en VS, por lo que presento bastantes trabas desde la subida de la BD hasta la conectividad con VS, que se termino consiguiendo.
+   Me bloqueé en la implementación de Supabase. Como era una herramienta y un propósito (el llamado a una base de datos en la nube) que no había usado antes en VS Code, se presentaron bastantes trabas, desde la subida de la base de datos hasta la conectividad con VS Code, que finalmente se consiguió.
 4. **¿Qué he aportado al equipo?**
-   Aporte montar el agente en VS y posterior trabajo en Claude a la par con el apoyo de Gemini del equipo, optimizando tokens y evitando reprocesos, así como la organización del proyecto/agente y posterior subida a GitHub
+   Aporté el montaje del agente en VS Code y el posterior trabajo en Claude, a la par con el apoyo de Gemini del equipo, optimizando tokens y evitando reprocesos, así como la organización del proyecto y del agente y su posterior subida a GitHub.
 5. **¿Qué haría diferente la próxima vez?**
-   Verificar documentación, instrucciones del LLM y pasos para la implementación de complementos.
+   Verificaría antes la documentación, las instrucciones del LLM y los pasos para la implementación de complementos.
 
 ---
 
 ## 2. Reflexión colectiva
 1. **¿Qué hemos aprendido trabajando juntos?**
-   Hemos aprendido a repartir el trabajo según lo que cada herramienta y cada persona hacía mejor. Preparábamos estructuras e instrucciones en Gemini y las ejecutábamos en Claude, lo que nos ayudó a optimizar tokens y evitar reprocesos. También aprendimos que, cuando aparece un bloqueo, conviene explorar alternativas sin dejar de investigar la causa del problema original. Así ocurrió con la conexión entre Supabase y VS Code: una parte del equipo probaba Neon mientras otra resolvía el error.
+   Hemos aprendido a repartir el trabajo según lo que cada herramienta y cada persona hacía mejor: cada integrante asumió tareas concretas que fuimos repartiendo durante el desarrollo. Preparábamos estructuras e instrucciones en Gemini y las ejecutábamos en Claude, lo que nos ayudó a optimizar tokens y evitar reprocesos. También aprendimos que, cuando aparece un bloqueo, conviene explorar alternativas sin dejar de investigar la causa del problema original. Así ocurrió con la conexión entre Supabase y VS Code: una parte del equipo probaba Neon mientras otra resolvía el error.
 2. **¿Qué nos llevamos de la experiencia?**
-   Nos llevamos cómo construir un sistema agéntico completo con datos reales: buscar un dataset fiable en Kaggle, cargarlo en una base de datos en la nube, conectarla con VS Code y habilitar MCP para que el agente la consulte. Además, conocimos alternativas como Neon y aprendimos a manejar las credenciales de forma segura, fuera del repositorio. Son conocimientos que podemos aplicar en futuros proyectos de análisis de datos.
+   Nos llevamos cómo construir un sistema agéntico completo con datos reales: buscar un dataset fiable en Kaggle, cargarlo en una base de datos en la nube, conectarla con VS Code y habilitar MCP para que el agente la consulte. Además, conocimos alternativas como Neon, que facilitan compartir y trabajar las bases de datos desde cualquier lugar, y aprendimos a manejar las credenciales de forma segura, fuera del repositorio. También descubrimos que es posible crear agentes personalizados para tareas específicas sin ser expertos en programación. Son conocimientos que podemos aplicar en futuros proyectos de análisis de datos.
 3. **¿Qué bloqueos tuvimos y cómo los resolvimos?**
-   El principal fue conectar Supabase con VS Code: desde la carga de la base de datos hasta la aprobación del MCP, que se quedaba pendiente por falta de un archivo de configuración. Lo resolvimos revisando el error mientras explorábamos Neon como plan alternativo. Otro bloqueo fue que la primera versión del agente describía tablas que no existían en la base de datos; lo detectamos al conectar el MCP y rediseñamos la skill sobre los datos reales. También corregimos nombres de archivo con caracteres especiales que se rompían en git y una clave de API que no era válida.
+   El principal fue conectar Supabase con VS Code: desde la carga de la base de datos hasta las credenciales, los permisos y la aprobación del MCP, que se quedaba pendiente por falta de un archivo de configuración. Lo resolvimos revisando el error mientras explorábamos Neon como plan alternativo, y apoyándonos en la IA para entender cada paso. Otro bloqueo fue que la primera versión del agente describía tablas que no existían en la base de datos; lo detectamos al conectar el MCP y rediseñamos la skill sobre los datos reales. También corregimos nombres de archivo con caracteres especiales que se rompían en git y una clave de API que no era válida.
 4. **¿Cómo hemos decidido, escuchado y cuestionado a la IA?**
-   Usamos la IA como apoyo, no como fuente de verdad. Cuando propuso tablas que no existían, adaptamos el agente al dataset real en lugar de inventar datos. Contrastamos sus cifras con consultas directas a la base de datos, y así detectamos y corregimos errores, como un recuento equivocado de pruebas. Tampoco le dejamos aprobarse permisos por su cuenta, y las decisiones críticas de cobro siempre quedan en manos de una persona. Combinar Gemini y Claude nos obligó, además, a revisar lo que proponía cada uno antes de ejecutarlo.
+   Usamos la IA como apoyo, no como fuente de verdad. Nos ayudó a desbloquearnos, preguntándole cómo resolver problemas concretos de credenciales y permisos, pero no dimos por buenas sus respuestas sin comprobarlas. Cuando propuso tablas que no existían, adaptamos el agente al dataset real en lugar de inventar datos. Contrastamos sus cifras con consultas directas a la base de datos, y así detectamos y corregimos errores, como un recuento equivocado de pruebas. Tampoco le dejamos aprobarse permisos por su cuenta, y las decisiones críticas de cobro siempre quedan en manos de una persona. Combinar Gemini y Claude nos obligó, además, a revisar lo que proponía cada uno antes de ejecutarlo.
 5. **¿Qué haríamos distinto si empezáramos de nuevo?**
-   Organizaríamos el trabajo para avanzar en paralelo desde varios ordenadores, en lugar de concentrar el desarrollo en uno solo; así, un bloqueo técnico no detendría todo el proyecto. También revisaríamos antes la documentación, las instrucciones del LLM y los pasos de instalación de cada complemento, y miraríamos los datos reales antes de diseñar el agente.
+   Organizaríamos el trabajo para avanzar en paralelo desde varios ordenadores, en lugar de concentrar el desarrollo en uno solo; así, un bloqueo técnico no detendría todo el proyecto. Para ello usaríamos el control de versiones desde el principio, de modo que cada uno parta del mismo punto y luego unifiquemos los avances. También revisaríamos antes la documentación, las instrucciones del LLM y los pasos de instalación de cada complemento, y miraríamos los datos reales antes de diseñar el agente.
 
 ---
 
@@ -75,5 +75,5 @@
 | | Compromiso |
 | :--- | :--- |
 | **Mantener** | El reparto de trabajo entre Gemini y Claude para optimizar tokens, y la costumbre de validar cada cifra contra los datos reales. |
-| **Cambiar** | Trabajar en paralelo desde varios ordenadores y revisar la documentación y los requisitos de cada herramienta antes de implementarla. |
-| **Experimentar** | Probar alternativas como Neon desde el inicio y comparar opciones antes de elegir la base de datos. |
+| **Cambiar** | Trabajar en paralelo desde varios ordenadores con control de versiones (Git), y revisar la documentación y los requisitos de cada herramienta antes de implementarla. |
+| **Experimentar** | Probar alternativas como Neon desde el inicio y comparar opciones antes de elegir la base de datos, y crear nuevos agentes personalizados para otras tareas de análisis. |
