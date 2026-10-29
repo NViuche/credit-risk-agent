@@ -59,21 +59,21 @@
 
 ## 2. Reflexión colectiva
 1. **¿Qué hemos aprendido trabajando juntos?**
-   ✍️
+   Hemos aprendido a repartir el trabajo según lo que cada herramienta y cada persona hacía mejor. Preparábamos estructuras e instrucciones en Gemini y las ejecutábamos en Claude, lo que nos ayudó a optimizar tokens y evitar reprocesos. También aprendimos que, cuando aparece un bloqueo, conviene explorar alternativas sin dejar de investigar la causa del problema original. Así ocurrió con la conexión entre Supabase y VS Code: una parte del equipo probaba Neon mientras otra resolvía el error.
 2. **¿Qué nos llevamos de la experiencia?**
-   ✍️
+   Nos llevamos cómo construir un sistema agéntico completo con datos reales: buscar un dataset fiable en Kaggle, cargarlo en una base de datos en la nube, conectarla con VS Code y habilitar MCP para que el agente la consulte. Además, conocimos alternativas como Neon y aprendimos a manejar las credenciales de forma segura, fuera del repositorio. Son conocimientos que podemos aplicar en futuros proyectos de análisis de datos.
 3. **¿Qué bloqueos tuvimos y cómo los resolvimos?**
-   ✍️
+   El principal fue conectar Supabase con VS Code: desde la carga de la base de datos hasta la aprobación del MCP, que se quedaba pendiente por falta de un archivo de configuración. Lo resolvimos revisando el error mientras explorábamos Neon como plan alternativo. Otro bloqueo fue que la primera versión del agente describía tablas que no existían en la base de datos; lo detectamos al conectar el MCP y rediseñamos la skill sobre los datos reales. También corregimos nombres de archivo con caracteres especiales que se rompían en git y una clave de API que no era válida.
 4. **¿Cómo hemos decidido, escuchado y cuestionado a la IA?**
-   ✍️
+   Usamos la IA como apoyo, no como fuente de verdad. Cuando propuso tablas que no existían, adaptamos el agente al dataset real en lugar de inventar datos. Contrastamos sus cifras con consultas directas a la base de datos, y así detectamos y corregimos errores, como un recuento equivocado de pruebas. Tampoco le dejamos aprobarse permisos por su cuenta, y las decisiones críticas de cobro siempre quedan en manos de una persona. Combinar Gemini y Claude nos obligó, además, a revisar lo que proponía cada uno antes de ejecutarlo.
 5. **¿Qué haríamos distinto si empezáramos de nuevo?**
-   ✍️
+   Organizaríamos el trabajo para avanzar en paralelo desde varios ordenadores, en lugar de concentrar el desarrollo en uno solo; así, un bloqueo técnico no detendría todo el proyecto. También revisaríamos antes la documentación, las instrucciones del LLM y los pasos de instalación de cada complemento, y miraríamos los datos reales antes de diseñar el agente.
 
 ---
 
 ## 3. Compromisos del equipo
 | | Compromiso |
 | :--- | :--- |
-| **Mantener** | ✍️ |
-| **Cambiar** | ✍️ |
-| **Experimentar** | ✍️ |
+| **Mantener** | El reparto de trabajo entre Gemini y Claude para optimizar tokens, y la costumbre de validar cada cifra contra los datos reales. |
+| **Cambiar** | Trabajar en paralelo desde varios ordenadores y revisar la documentación y los requisitos de cada herramienta antes de implementarla. |
+| **Experimentar** | Probar alternativas como Neon desde el inicio y comparar opciones antes de elegir la base de datos. |
