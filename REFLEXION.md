@@ -1,8 +1,6 @@
 # Reflexión del Proyecto: CreditGuard AI
 
-> Las respuestas marcadas con ✍️ las escribe cada integrante o el equipo. Se valora la honestidad y el pensamiento crítico, no las respuestas perfectas.
-
-## Contexto: hechos del proyecto (para apoyar la reflexión)
+## Contexto: hechos del proyecto
 - **Qué construimos:** un agente (Claude Code) que consulta 32.581 préstamos reales en Supabase por MCP y los puntúa con una skill propia. Además, un servidor MCP propio hecho con el SDK oficial, un backend y un frontend en Streamlit. Las acciones críticas requieren autorización humana.
 - **Resultado:** el score separa bien el riesgo (8,2 % de impago en BAJO frente a 72,1 % en CRÍTICO; AUC 0,793). Las 9 pruebas obligatorias están aprobadas.
 - **Bloqueos reales que tuvimos:**
@@ -21,9 +19,7 @@
 
 ## 1. Reflexión individual
 
-Copiar este bloque una vez por integrante.
-
-### Integrante: ✍️ (nombre)
+### Integrante: Roberto Mario Brochero López
 1. **¿Qué he aprendido?**
    ✍️
 2. **¿Qué me llevo y cómo lo aplicaré?**
@@ -35,7 +31,19 @@ Copiar este bloque una vez por integrante.
 5. **¿Qué haría diferente la próxima vez?**
    ✍️
 
-### Integrante: ✍️ (nombre)
+### Integrante: Sofía Montero Jara
+1. **¿Qué he aprendido?**
+   Que otra pagina que es similar a supabase que se llama neon y que se puede utilizar gratis
+2. **¿Qué me llevo y cómo lo aplicaré?**
+   Me llevo que que se pueden conseguir bases de datos confiables en kaggle, también como hacer la vinculación con neon y visual studios, lo puedo aplicar para futuros proyectos de análisis de datos y para practicar casos de GitHub
+3. **¿Dónde me he bloqueado y cómo lo he afrontado?**
+   Nos bloqueamos con la unión de supabase con Visual Code nos da error, primero empezamos a buscar otras opciones como neon pero mientras se ejecutaba la conexión con neon un compañero reviso el error y nos ayudó a solucionar
+4. **¿Qué he aportado al equipo?**
+   He aportado creando las estructuras en mi gemini, para solo ejecutarlas en claude y asi ahorrar tokens
+5. **¿Qué haría diferente la próxima vez?**
+   ✍️
+
+### Integrante: Santiago Nicolás Viuche Pinilla
 1. **¿Qué he aprendido?**
    ✍️
 2. **¿Qué me llevo y cómo lo aplicaré?**
@@ -49,7 +57,7 @@ Copiar este bloque una vez por integrante.
 
 ---
 
-## 2. Reflexión colectiva (acuerdo del equipo)
+## 2. Reflexión colectiva
 1. **¿Qué hemos aprendido trabajando juntos?**
    ✍️
 2. **¿Qué nos llevamos de la experiencia?**
