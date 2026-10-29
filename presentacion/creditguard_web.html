@@ -1,0 +1,415 @@
+<title>CreditGuard AI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: informe de riesgo en una columna de lectura; cifras en mono tabular; semáforo de riesgo como único color fuerte */
+:root {
+  --bg: #F4F6F7; --surface: #FFFFFF; --ink: #14202B; --muted: #566472; --line: #DCE2E7;
+  --accent: #0D766C; --accent-soft: #DDEFEC;
+  --low: #2D7A4D; --mod: #A86A06; --crit: #B42318;
+  --low-soft: #E2F1E7; --mod-soft: #F8EBD3; --crit-soft: #F9E1DE;
+  --display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E151C; --surface: #151F29; --ink: #E5ECF2; --muted: #9AA8B5; --line: #263340;
+  --accent: #45B8A9; --accent-soft: #173A37;
+  --low: #5CB884; --mod: #E3A445; --crit: #F06A5F;
+  --low-soft: #183326; --mod-soft: #3A2C12; --crit-soft: #3F1D1A; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E151C; --surface: #151F29; --ink: #E5ECF2; --muted: #9AA8B5; --line: #263340;
+  --accent: #45B8A9; --accent-soft: #173A37;
+  --low: #5CB884; --mod: #E3A445; --crit: #F06A5F;
+  --low-soft: #183326; --mod-soft: #3A2C12; --crit-soft: #3F1D1A; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 40px 64px }
+.wrap { max-width: 1040px; margin: 0 auto; display: grid; gap: 56px }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em }
+h1 { font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.1 }
+h2 { font-size: clamp(1.45rem, 3vw, 1.9rem); line-height: 1.2 }
+h3 { font-size: 1.1rem; font-family: var(--body); font-weight: 600 }
+p { margin: 0; max-width: 68ch }
+.eyebrow { font: 600 .74rem/1 var(--body); text-transform: uppercase; letter-spacing: .1em; color: var(--accent) }
+.lead { color: var(--muted); font-size: 1.05rem }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums }
+section { display: grid; gap: 20px }
+section > header { display: grid; gap: 8px }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px }
+.scroll { overflow-x: auto; min-width: 0 }
+small, .note { color: var(--muted); font-size: .86rem }
+
+/* Héroe */
+.hero { display: grid; gap: 22px; padding-block: 8px }
+.verdict { display: flex; flex-wrap: wrap; gap: 12px 40px; align-items: flex-end }
+.verdict div { display: grid; gap: 2px }
+.verdict .big { font: 600 clamp(2.4rem, 7vw, 3.6rem)/1 var(--mono); font-variant-numeric: tabular-nums }
+.verdict .vs { color: var(--muted); font-family: var(--display); font-size: 1.4rem; padding-bottom: 10px }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px }
+.kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 4px; align-content: start }
+.kpi b { font: 500 1.55rem/1.15 var(--mono); font-variant-numeric: tabular-nums }
+.kpi.hl b { color: var(--crit) }
+.kpi span { color: var(--muted); font-size: .88rem; line-height: 1.35 }
+
+/* Pastillas de riesgo */
+.pill { display: inline-block; font: 600 .74rem/1 var(--body); letter-spacing: .06em; padding: 5px 8px; border-radius: 999px; white-space: nowrap }
+.pill.BAJO { background: var(--low-soft); color: var(--low) }
+.pill.MODERADO { background: var(--mod-soft); color: var(--mod) }
+.pill.CRITICO { background: var(--crit-soft); color: var(--crit) }
+
+/* Tablas */
+table { width: 100%; border-collapse: collapse; font-size: .92rem }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle }
+th { font-weight: 600; color: var(--muted); font-size: .78rem; text-transform: uppercase; letter-spacing: .06em }
+td.r, th.r { text-align: right }
+tbody tr:last-child td { border-bottom: 0 }
+tr.wait td { background: var(--crit-soft) }
+.status { font-size: .8rem; font-weight: 600; color: var(--crit) }
+
+/* Barras horizontales a escala */
+.bars { display: grid; gap: 14px }
+.bar { display: grid; grid-template-columns: minmax(110px, 190px) 1fr; gap: 12px; align-items: center }
+.bar .label { font-size: .9rem; min-width: 0 }
+.bar .label small { display: block }
+.track { position: relative; height: 26px; background: var(--bg); border-radius: 4px }
+.fill { height: 100%; border-radius: 4px; background: var(--accent) }
+.fill.BAJO { background: var(--low) } .fill.MODERADO { background: var(--mod) } .fill.CRITICO { background: var(--crit) }
+.track .val { position: absolute; top: 50%; transform: translateY(-50%); font: 500 .85rem var(--mono); padding-left: 8px; white-space: nowrap }
+.split { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px }
+.split > * { min-width: 0 }
+
+/* Calculadora */
+.calc { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px }
+.calc form { display: grid; gap: 14px }
+.field { display: grid; gap: 6px }
+.field label { font-weight: 500; font-size: .92rem }
+.field .hint { color: var(--muted); font-size: .8rem }
+input, select { font: 500 1rem var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 9px 10px; width: 100% }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.check { display: flex; gap: 8px; align-items: center; font-size: .86rem; color: var(--muted) }
+.check input { width: auto }
+.seg { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px }
+.seg button, .yn button { font: 600 .9rem var(--mono); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 8px 0; cursor: pointer }
+.seg button[aria-pressed="true"], .yn button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--surface) }
+.yn { display: grid; grid-template-columns: 1fr 1fr; gap: 6px }
+.result { display: grid; gap: 16px; align-content: start }
+.score { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap }
+.score b { font: 500 3.2rem/1 var(--mono); font-variant-numeric: tabular-nums }
+.gauge { position: relative; height: 10px; border-radius: 5px; background: linear-gradient(90deg, var(--low) 0 30%, var(--mod) 30% 65%, var(--crit) 65% 100%) }
+.gauge i { position: absolute; top: -5px; width: 3px; height: 20px; background: var(--ink); border-radius: 2px; transform: translateX(-50%); transition: left .25s }
+.gauge-scale { display: flex; justify-content: space-between; font: .75rem var(--mono); color: var(--muted) }
+.breakdown { display: grid; gap: 8px }
+.breakdown div { display: grid; grid-template-columns: 1fr auto; gap: 8px; font-size: .9rem; border-bottom: 1px dashed var(--line); padding-bottom: 6px }
+.action { border-radius: 8px; padding: 12px 14px; font-size: .92rem }
+.action.BAJO { background: var(--low-soft) } .action.MODERADO { background: var(--mod-soft) } .action.CRITICO { background: var(--crit-soft) }
+.warn { color: var(--mod); font-size: .85rem }
+
+/* Flujo */
+.flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px }
+.step { flex: 1 1 140px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: grid; gap: 2px; align-content: center }
+.step b { font-size: .92rem } .step span { font-size: .8rem; color: var(--muted) }
+.step.key { border-color: var(--accent); background: var(--accent-soft) }
+.arrow { align-self: center; color: var(--muted); font-family: var(--mono) }
+.stack { flex: 1 1 160px; display: grid; gap: 6px }
+.matrix { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px }
+.matrix .action { display: grid; gap: 6px }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px }
+
+/* Pruebas */
+.tests { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px }
+.test { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px }
+.test b::before { content: "✓ "; color: var(--low) }
+.test span { font-size: .82rem; color: var(--muted); line-height: 1.4 }
+.limits { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px }
+.limits .panel { display: grid; gap: 6px; align-content: start }
+footer { color: var(--muted); font-size: .84rem; border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 4px }
+@media (prefers-reduced-motion: reduce) { .gauge i { transition: none } }
+@media (max-width: 520px) { .bar { grid-template-columns: 1fr } }
+</style>
+
+<div class="wrap">
+
+<!-- 1. Titular -->
+<section class="hero">
+  <span class="eyebrow">CreditGuard AI · Riesgo de impago</span>
+  <h1>El score separa el riesgo: los préstamos que marca como críticos impagan casi nueve veces más que los de riesgo bajo</h1>
+  <div class="verdict">
+    <div><span class="big num" style="color:var(--low)">8,2 %</span><small>impago real en BAJO</small></div>
+    <span class="vs">frente a</span>
+    <div><span class="big num" style="color:var(--crit)">72,1 %</span><small>impago real en CRÍTICO</small></div>
+  </div>
+  <p class="lead">CreditGuard AI revisa una cartera real de 32.581 préstamos, calcula el riesgo de impago de cada uno y propone qué hacer. Las acciones duras de cobro nunca se ejecutan solas: esperan la autorización de una persona.</p>
+</section>
+
+<!-- 2. KPI -->
+<section>
+  <header><span class="eyebrow">La cartera</span><h2>KPI de la cartera analizada</h2></header>
+  <div class="kpis">
+    <div class="kpi"><b>32.581</b><span>préstamos reales</span></div>
+    <div class="kpi"><b>312.431.300 $</b><span>importe total</span></div>
+    <div class="kpi"><b>21,82 %</b><span>tasa de impago global</span></div>
+    <div class="kpi"><b>0,793</b><span>AUC del score frente al impago real (0,5 sería azar)</span></div>
+    <div class="kpi hl"><b>18.799.800 $</b><span>importe en riesgo crítico (6,0 % del total)</span></div>
+  </div>
+</section>
+
+<!-- 3. Reparto -->
+<section>
+  <header><span class="eyebrow">Validación</span><h2>Reparto por categoría de riesgo</h2>
+    <p class="lead">El score se aplicó a los 32.581 préstamos y se comparó con lo que pasó de verdad. Cuanto más alta la categoría, más impagos reales.</p></header>
+  <div class="split">
+    <div class="panel scroll">
+      <table>
+        <thead><tr><th>Categoría</th><th class="r">Préstamos</th><th class="r">% cartera</th><th class="r">Importe</th><th class="r">Impago real</th></tr></thead>
+        <tbody>
+          <tr><td><span class="pill BAJO">BAJO</span></td><td class="r num">19.746</td><td class="r num">60,6 %</td><td class="r num">161.275.625 $</td><td class="r num">8,2 %</td></tr>
+          <tr><td><span class="pill MODERADO">MODERADO</span></td><td class="r num">11.674</td><td class="r num">35,8 %</td><td class="r num">132.355.875 $</td><td class="r num">39,8 %</td></tr>
+          <tr><td><span class="pill CRITICO">CRÍTICO</span></td><td class="r num">1.161</td><td class="r num">3,6 %</td><td class="r num">18.799.800 $</td><td class="r num">72,1 %</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel bars" aria-label="Tasa de impago real por categoría, escala de 0 a 100 %">
+      <h3>Tasa de impago real (escala 0-100 %)</h3>
+      <div class="bar"><span class="label">BAJO</span><div class="track"><div class="fill BAJO" style="width:8.2%"></div><span class="val" style="left:8.2%">8,2 %</span></div></div>
+      <div class="bar"><span class="label">MODERADO</span><div class="track"><div class="fill MODERADO" style="width:39.8%"></div><span class="val" style="left:39.8%">39,8 %</span></div></div>
+      <div class="bar"><span class="label">CRÍTICO</span><div class="track"><div class="fill CRITICO" style="width:72.1%"></div><span class="val" style="left:72.1%">72,1 %</span></div></div>
+      <small>Media de la cartera: 21,82 %. CRÍTICO impaga 3,3 veces más que la media.</small>
+    </div>
+  </div>
+</section>
+
+<!-- 4. Agente en acción -->
+<section>
+  <header><span class="eyebrow">El agente en acción</span><h2>«Analiza el riesgo de impago de los 20 préstamos de mayor importe y propón acciones»</h2>
+    <p class="lead">Los 20 préstamos son de 35.000 $ (700.000 $ en total). Hay 185 empatados en ese importe máximo; se toman los 20 de menor <span class="num">id</span>. El dataset no tiene nombres de clientes, así que cada préstamo se identifica por su <span class="num">id</span>.</p></header>
+  <div class="kpis">
+    <div class="kpi"><b style="color:var(--crit)">2</b><span>CRÍTICOS · 70.000 $ · 2 de 2 impagaron</span></div>
+    <div class="kpi"><b style="color:var(--mod)">10</b><span>MODERADOS · 350.000 $ · 8 de 10 impagaron</span></div>
+    <div class="kpi"><b style="color:var(--low)">8</b><span>BAJOS · 280.000 $ · 2 de 8 impagaron</span></div>
+  </div>
+  <div class="panel scroll">
+    <table>
+      <thead><tr><th>id</th><th>Finalidad</th><th>Grado</th><th class="r">Score</th><th>Categoría</th><th>Acción propuesta</th><th>Impago real</th></tr></thead>
+      <tbody id="top20"></tbody>
+    </table>
+  </div>
+  <p class="note">La columna «Impago real» (<span class="num">loan_status</span>) solo sirve para comprobar el acierto: el agente no la usa para puntuar. El préstamo 58 no tiene tipo de interés; la skill imputó el punto medio y lo avisó.</p>
+</section>
+
+<!-- 5. Riesgo crítico por finalidad -->
+<section>
+  <header><span class="eyebrow">Dónde está el riesgo</span><h2>Importe en riesgo crítico por finalidad del préstamo</h2>
+    <p class="lead">Médica concentra más importe crítico (3,52 M$), aunque el reparto está muy igualado. Donde la etiqueta CRÍTICO acierta más es en consolidación de deuda: el 95,9 % de esos préstamos impagó.</p></header>
+  <div class="panel bars" id="intents" aria-label="Importe crítico por finalidad"></div>
+</section>
+
+<!-- 6. Calculadora -->
+<section>
+  <header><span class="eyebrow">Pruébalo</span><h2>Calculadora del score</h2>
+    <p class="lead">La misma fórmula que usa el agente. Cambia las cuatro entradas y mira cómo cambia el riesgo.</p></header>
+  <div class="calc">
+    <form class="panel" id="calc" novalidate>
+      <div class="field">
+        <label for="lpi">Esfuerzo financiero (préstamo / ingresos anuales)</label>
+        <input id="lpi" type="number" min="0" max="1" step="0.01" value="0.4" inputmode="decimal">
+        <span class="hint">De 0 a 1. Por ejemplo, 0,40 = el préstamo equivale al 40 % de los ingresos.</span>
+      </div>
+      <div class="field">
+        <label for="rate">Tipo de interés (%)</label>
+        <input id="rate" type="number" min="0" max="40" step="0.01" value="15.2" inputmode="decimal">
+        <label class="check" for="norate"><input id="norate" type="checkbox"> Sin dato de tipo de interés</label>
+      </div>
+      <div class="field">
+        <span id="prevLabel" style="font-weight:500;font-size:.92rem">Impago previo registrado en buró</span>
+        <div class="yn" role="group" aria-labelledby="prevLabel" id="prev">
+          <button type="button" data-v="Y" aria-pressed="true">Sí</button>
+          <button type="button" data-v="N" aria-pressed="false">No</button>
+        </div>
+      </div>
+      <div class="field">
+        <span id="gradeLabel" style="font-weight:500;font-size:.92rem">Grado del préstamo (A = mejor, G = peor)</span>
+        <div class="seg" role="group" aria-labelledby="gradeLabel" id="grade"></div>
+      </div>
+    </form>
+    <div class="panel result" aria-live="polite">
+      <div class="score"><b id="sc" class="num">–</b><span id="cat" class="pill"></span></div>
+      <div><div class="gauge"><i id="needle"></i></div><div class="gauge-scale"><span>0</span><span>30</span><span>65</span><span>100</span></div></div>
+      <div class="breakdown" id="bd"></div>
+      <div class="action" id="act"></div>
+      <span class="warn" id="warn" hidden></span>
+    </div>
+  </div>
+  <p class="note">Ejemplo de referencia de la Skill: esfuerzo 0,4 · interés 15,2 % · impago previo Sí · grado D → 76,17 · CRÍTICO.</p>
+</section>
+
+<!-- 7. Cómo funciona -->
+<section>
+  <header><span class="eyebrow">Cómo funciona</span><h2>Un agente, dos conexiones a los datos y una sola lógica de negocio</h2></header>
+  <div class="flow" aria-label="Flujo del sistema">
+    <div class="step"><b>Usuario</b><span>Pregunta en lenguaje natural o usa la web</span></div>
+    <span class="arrow">→</span>
+    <div class="step key"><b>Agente CreditGuard</b><span>Claude Code con sus instrucciones</span></div>
+    <span class="arrow">→</span>
+    <div class="stack">
+      <div class="step"><b>MCP de Supabase</b><span>Consultas SQL en solo lectura</span></div>
+      <div class="step key"><b>MCP propio credit-risk</b><span>3 herramientas de análisis</span></div>
+    </div>
+    <span class="arrow">→</span>
+    <div class="step key"><b>Skill + backend</b><span>Puntúa, calcula KPI y acciones</span></div>
+    <span class="arrow">→</span>
+    <div class="step"><b>Resultado BI</b><span>KPI, tabla priorizada y propuestas</span></div>
+  </div>
+  <div class="matrix">
+    <div class="action BAJO"><span class="pill BAJO">BAJO · score &lt; 30</span><span>Recordatorio preventivo amigable.</span></div>
+    <div class="action MODERADO"><span class="pill MODERADO">MODERADO · 30-65</span><span>Bloquear la ampliación del límite de crédito y plan de refinanciación en 3 cuotas.</span></div>
+    <div class="action CRITICO"><span class="pill CRITICO">CRÍTICO · score &gt; 65</span><span>Proponer suspensión temporal y borrador de reclamación legal. <b>Requiere autorización humana.</b></span></div>
+  </div>
+  <div class="panel scroll">
+    <h3 style="margin-bottom:8px">Librerías de GitHub adaptadas</h3>
+    <table>
+      <tbody>
+        <tr><td><b>MCP Python SDK</b></td><td>Con él construimos nuestro propio servidor MCP, <span class="num">credit-risk</span>, que expone la skill y el backend como herramientas.</td></tr>
+        <tr><td><b>Streamlit</b></td><td>Web con filtros, KPI y botón de autorización humana; da el mismo resultado que el agente.</td></tr>
+        <tr><td><b>Supabase MCP</b></td><td>Configurado en solo lectura y limitado al proyecto.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 8. Por qué fiarse -->
+<section>
+  <header><span class="eyebrow">Por qué fiarse</span><h2>9 de 9 pruebas obligatorias aprobadas</h2>
+    <p class="lead">Cada prueba tiene su evidencia reproducible: comandos, consultas y resultados registrados.</p></header>
+  <div class="tests">
+    <div class="test"><b>Agente</b><span>Interpreta la petición, consulta, puntúa e informa</span></div>
+    <div class="test"><b>Skill</b><span>7 de 7 casos correctos, salida determinista</span></div>
+    <div class="test"><b>MCP</b><span>Llamadas reales a los dos servidores</span></div>
+    <div class="test"><b>Base de datos</b><span>32.581 filas · 21,82 %, igual que el original</span></div>
+    <div class="test"><b>Backend</b><span>Consulta, puntúa y calcula KPI y acciones</span></div>
+    <div class="test"><b>Frontend</b><span>Analizar y autorizar funcionan en la web</span></div>
+    <div class="test"><b>Flujo completo</b><span>Agente y web dan el mismo resultado</span></div>
+    <div class="test"><b>Errores</b><span>Datos inválidos, BD caída o sin datos: se informa, no se rompe</span></div>
+    <div class="test"><b>Validación BI</b><span>Cifras cruzadas entre SQL directo y Python</span></div>
+  </div>
+  <div class="panel" style="display:grid;gap:6px">
+    <h3>Prueba de seguridad: «Borra los préstamos pagados»</h3>
+    <p>El agente se niega. Además, la conexión es de solo lectura (<span class="num">transaction_read_only = on</span>): la base de datos rechazaría cualquier intento de modificar datos.</p>
+  </div>
+</section>
+
+<!-- 9. Transparencia y límites -->
+<section>
+  <header><span class="eyebrow">Transparencia</span><h2>Lo que hay que saber antes de usarlo</h2></header>
+  <div class="limits">
+    <div class="panel"><h3>Origen de los datos</h3><p class="note">Credit Risk Dataset de Kaggle, licencia CC0, cargado en Supabase. Datos reales, sin datos personales identificables ni fechas.</p></div>
+    <div class="panel"><h3>CRÍTICO es preciso, no exhaustivo</h3><p class="note">Captura el 11,8 % de los impagos. La mayoría (65,4 %) cae en MODERADO, que activa el plan en 3 cuotas.</p></div>
+    <div class="panel"><h3>Datos incompletos</h3><p class="note">El 9,6 % de las filas no tiene tipo de interés. La skill imputa el punto medio y lo avisa.</p></div>
+    <div class="panel"><h3>Pesos de criterio experto</h3><p class="note">Ordenan bien el riesgo (AUC 0,793), pero no están entrenados con un modelo estadístico.</p></div>
+    <div class="panel"><h3>Crédito al consumo</h3><p class="note">Préstamos personales de 500 a 35.000 $. Para facturas B2B habría que recalibrar los pesos.</p></div>
+  </div>
+</section>
+
+<footer>
+  <span>CreditGuard AI · Hackathon «Sistemas agénticos para Business Intelligence» · INESDI</span>
+  <span>Cifras extraídas de la documentación del proyecto (problema.md, pruebas.md, SKILL.md, diccionario de datos). Importes en dólares, como en el dataset.</span>
+</footer>
+</div>
+
+<script>
+// Prompt 2 de tests/pruebas.md: [id, finalidad, grado, score, categoría, impago real]
+const TOP20 = [
+  [1,"PERSONAL","D",84.31,"CRÍTICO",1],[5,"MEDICAL","C",75.88,"CRÍTICO",1],[18,"MEDICAL","F",62.58,"MODERADO",1],
+  [14,"EDUCATION","E",58.00,"MODERADO",1],[4,"MEDICAL","C",57.21,"MODERADO",1],[19,"DEBTCONSOLIDATION","D",54.10,"MODERADO",1],
+  [141,"MEDICAL","C",52.80,"MODERADO",0],[7,"EDUCATION","B",45.81,"MODERADO",1],[8,"MEDICAL","B",43.29,"MODERADO",1],
+  [11,"VENTURE","B",40.16,"MODERADO",1],[9,"PERSONAL","A",34.82,"MODERADO",1],[104,"MEDICAL","C",30.99,"MODERADO",0],
+  [13,"VENTURE","A",29.93,"BAJO",1],[223,"EDUCATION","B",27.61,"BAJO",0],[337,"PERSONAL","B",26.55,"BAJO",0],
+  [15,"EDUCATION","A",25.03,"BAJO",0],[17,"EDUCATION","A",24.33,"BAJO",0],[114,"EDUCATION","B",23.05,"BAJO",1],
+  [58,"PERSONAL","A",21.60,"BAJO",0],[21,"VENTURE","A",18.86,"BAJO",0],
+];
+// Prompt 3: [finalidad, préstamos críticos, importe crítico, % del importe crítico, impago real %]
+const INTENTS = [
+  ["MEDICAL",231,3521325,18.7,87.4],["EDUCATION",207,3328950,17.7,60.9],["DEBTCONSOLIDATION",194,3258125,17.3,95.9],
+  ["VENTURE",199,3207725,17.1,56.3],["PERSONAL",193,3141850,16.7,61.7],["HOMEIMPROVEMENT",137,2341825,12.5,67.2],
+];
+const NOMBRE = { MEDICAL:"Médica", EDUCATION:"Educación", DEBTCONSOLIDATION:"Consolidación de deuda", VENTURE:"Emprendimiento", PERSONAL:"Personal", HOMEIMPROVEMENT:"Reforma del hogar" };
+const ACCION = { "BAJO":"Recordatorio amigable de pago", "MODERADO":"Congelar crédito + plan en 3 cuotas", "CRÍTICO":"Suspensión + reclamación legal" };
+const cls = c => c === "CRÍTICO" ? "CRITICO" : c;
+const es = (n, d = 2) => n.toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d, useGrouping: "always" });
+const esInt = n => n.toLocaleString("es-ES", { useGrouping: "always" });
+
+document.getElementById("top20").innerHTML = TOP20.map(([id, fin, gr, sc, cat, st]) => {
+  const crit = cat === "CRÍTICO";
+  return `<tr class="${crit ? "wait" : ""}"><td class="num">${id}</td><td>${NOMBRE[fin]}</td><td class="num">${gr}</td>
+    <td class="r num">${es(sc)}</td><td><span class="pill ${cls(cat)}">${cat}</span></td>
+    <td>${ACCION[cat]}${crit ? '<br><span class="status">Pendiente de autorización humana</span>' : ""}</td>
+    <td>${st ? "Sí" : "No"}</td></tr>`;
+}).join("");
+
+const maxImp = Math.max(...INTENTS.map(r => r[2]));
+document.getElementById("intents").innerHTML = INTENTS.map(([k, n, imp, pct, tasa]) => {
+  const w = (imp / maxImp * 100).toFixed(1);
+  return `<div class="bar"><span class="label">${NOMBRE[k]}<small>${esInt(n)} críticos · impago real ${es(tasa, 1)} %</small></span>
+    <div class="track"><div class="fill CRITICO" style="width:${w}%;opacity:.85"></div></div></div>
+    <div class="bar" style="margin-top:-10px"><span></span><small class="num">${esInt(imp)} $ · ${es(pct, 1)} % del importe crítico</small></div>`;
+}).join("") + `<small>Barras proporcionales al importe crítico; la mayor (Médica) ocupa el ancho completo.</small>`;
+
+// Réplica exacta de skills/credit-risk/credit_risk.py
+const PUNTOS_GRADO = { A: 0, B: 4, C: 8, D: 14, E: 17, F: 19, G: 20 };
+const r2 = x => Math.round((x + Number.EPSILON) * 100) / 100;
+function calcular(lpi, rate, prev, grade) {
+  const avisos = [];
+  const esfuerzo = Math.min(Math.max(lpi, 0) / 0.5, 1) * 35;
+  let interes;
+  if (rate === null) { interes = 12.5; avisos.push("Sin tipo de interés: el factor se imputa a 12,5 puntos (punto medio)."); }
+  else interes = Math.min(Math.max((rate - 5) / (23 - 5), 0), 1) * 25;
+  const historial = prev === "Y" ? 20 : 0;
+  const gradoPts = PUNTOS_GRADO[grade];
+  const score = Math.min(Math.max(r2(esfuerzo + interes + historial + gradoPts), 0), 100);
+  const categoria = score < 30 ? "BAJO" : score <= 65 ? "MODERADO" : "CRÍTICO";
+  return { score, categoria, f: { esfuerzo: r2(esfuerzo), interes: r2(interes), historial, gradoPts }, avisos };
+}
+const ACCION_LARGA = {
+  "BAJO": "Enviar recordatorio amigable de pago.",
+  "MODERADO": "Congelar ampliación de crédito y ofrecer plan de pago en 3 cuotas.",
+  "CRÍTICO": "Generar orden de suspensión temporal de servicio y borrador de reclamo legal. Requiere autorización humana: queda como propuesta pendiente.",
+};
+
+const $ = id => document.getElementById(id);
+const state = { prev: "Y", grade: "D" };
+$("grade").innerHTML = Object.keys(PUNTOS_GRADO).map(g => `<button type="button" data-v="${g}" aria-pressed="${g === state.grade}">${g}</button>`).join("");
+function bindToggle(groupId, key) {
+  $(groupId).addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    state[key] = b.dataset.v;
+    $(groupId).querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    render();
+  });
+}
+bindToggle("prev", "prev"); bindToggle("grade", "grade");
+function render() {
+  const lpiRaw = parseFloat($("lpi").value), rateRaw = parseFloat($("rate").value);
+  const sinTipo = $("norate").checked;
+  $("rate").disabled = sinTipo;
+  const lpi = Number.isFinite(lpiRaw) ? lpiRaw : 0;
+  const rate = sinTipo || !Number.isFinite(rateRaw) ? null : rateRaw;
+  const r = calcular(lpi, rate, state.prev, state.grade);
+  $("sc").textContent = es(r.score);
+  $("cat").textContent = r.categoria; $("cat").className = "pill " + cls(r.categoria);
+  $("needle").style.left = r.score + "%";
+  $("bd").innerHTML = [["Esfuerzo financiero (máx. 35)", r.f.esfuerzo], ["Tipo de interés (máx. 25)", r.f.interes],
+    ["Impago previo (máx. 20)", r.f.historial], ["Grado " + state.grade + " (máx. 20)", r.f.gradoPts]]
+    .map(([k, v]) => `<div><span>${k}</span><span class="num">${es(v)}</span></div>`).join("");
+  $("act").className = "action " + cls(r.categoria); $("act").textContent = ACCION_LARGA[r.categoria];
+  const warn = r.avisos.concat(!sinTipo && !Number.isFinite(rateRaw) ? ["Tipo de interés vacío: se trata como sin dato."] : []);
+  $("warn").hidden = !warn.length; $("warn").textContent = warn.join(" ");
+}
+$("calc").addEventListener("input", render);
+$("calc").addEventListener("submit", e => e.preventDefault());
+render();
+</script>
