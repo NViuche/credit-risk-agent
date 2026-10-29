@@ -12,6 +12,15 @@ import streamlit as st  # noqa: E402
 
 from backend import servicio  # noqa: E402
 
+
+def es(valor, decimales: int = 0) -> str:
+    """Formato numérico español: punto de miles y coma decimal (22.000 · 93,14)."""
+    if valor is None or pd.isna(valor):
+        return "—"
+    texto = f"{valor:,.{decimales}f}"
+    return texto.replace(",", "_").replace(".", ",").replace("_", ".")
+
+
 st.set_page_config(page_title="CreditGuard AI", page_icon="📉", layout="wide")
 st.title("CreditGuard AI · Riesgo de impago")
 st.caption("Cartera real de 32.581 préstamos en Supabase (`public.credit_risk`). Lectura en modo solo lectura.")
@@ -52,9 +61,9 @@ if not informe["prestamos"]:
 # --- KPI ------------------------------------------------------------------------
 k = informe["kpis"]
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Préstamos analizados", f"{k['prestamos']:,}".replace(",", "."))
-c2.metric("Importe expuesto", f"{k['importe_total']:,.0f} $".replace(",", "."))
-c3.metric("Score medio", k["score_medio"])
+c1.metric("Préstamos analizados", es(k["prestamos"]))
+c2.metric("Importe expuesto", f"{es(k['importe_total'])} $")
+c3.metric("Score medio", es(k["score_medio"], 2))
 c4.metric("Pendientes de autorización", k["pendientes_autorizacion"])
 
 st.subheader("KPI por categoría de riesgo")
@@ -62,7 +71,9 @@ tabla_kpi = pd.DataFrame(k["por_categoria"]).T.rename(columns={
     "prestamos": "Préstamos", "importe": "Importe ($)",
     "impagos_reales": "Impagos reales", "tasa_impago_pct": "Tasa de impago real (%)"})
 izq, der = st.columns([3, 2])
-izq.dataframe(tabla_kpi, width="stretch")
+izq.dataframe(tabla_kpi.style.format({
+    "Préstamos": es, "Importe ($)": es, "Impagos reales": es,
+    "Tasa de impago real (%)": lambda v: es(v, 1)}), width="stretch")
 der.bar_chart(tabla_kpi["Préstamos"], horizontal=True)
 st.caption("`loan_status` (impago real) solo se usa para validar el score, nunca para calcularlo.")
 
@@ -71,7 +82,10 @@ st.subheader("Préstamos priorizados por riesgo")
 detalle = pd.DataFrame(informe["prestamos"])[[
     "id", "score_riesgo", "categoria", "loan_amnt", "loan_intent", "loan_grade",
     "loan_int_rate", "loan_percent_income", "cb_person_default_on_file", "accion_sugerida", "loan_status"]]
-st.dataframe(detalle, width="stretch", hide_index=True)
+st.dataframe(detalle.style.format({
+    "id": str, "score_riesgo": lambda v: es(v, 2), "loan_amnt": es,
+    "loan_int_rate": lambda v: es(v, 2), "loan_percent_income": lambda v: es(v, 2)}),
+    width="stretch", hide_index=True)
 
 criticos = [p for p in informe["prestamos"] if p["requiere_autorizacion_humana"]]
 st.subheader(f"Acciones que requieren autorización humana ({len(criticos)})")
@@ -80,10 +94,10 @@ if not criticos:
 for p in criticos:
     autorizado = p["id"] in st.session_state.autorizados
     with st.container(border=True):
-        st.markdown(f"**Préstamo {p['id']}** · score {p['score_riesgo']} · {p['loan_amnt']:,} $ · {p['loan_intent']}")
+        st.markdown(f"**Préstamo {p['id']}** · score {es(p['score_riesgo'], 2)} · {es(p['loan_amnt'])} $ · {p['loan_intent']}")
         st.write(p["accion_sugerida"])
         if autorizado:
-            st.success("Autorizado por el analista. (Prototipo: no se ejecuta ninguna acción externa).")
+            st.success("Autorizado por el analista.")
         elif st.button("Autorizar propuesta", key=f"aut-{p['id']}"):
             st.session_state.autorizados.add(p["id"])
             st.rerun()

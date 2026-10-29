@@ -41,7 +41,7 @@ def calculate_credit_risk(
     if loan_int_rate is None:
         # ~9,6 % de las filas no tienen tipo: se imputa el punto medio y se avisa.
         factor_interes = 12.5
-        avisos.append("loan_int_rate nulo: factor imputado a 12.5 (punto medio).")
+        avisos.append("loan_int_rate nulo: factor imputado a 12,5 (punto medio).")
     else:
         proporcion = (float(loan_int_rate) - TIPO_MIN) / (TIPO_MAX - TIPO_MIN)
         factor_interes = min(max(proporcion, 0.0), 1.0) * 25.0

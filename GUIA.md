@@ -1,26 +1,55 @@
-# Guía de CreditGuard AI: uso y sustentación
+# Guía de CreditGuard AI
 
-Esta guía tiene dos partes:
-1. **Guía de uso**, para un futuro usuario del agente.
-2. **Guía de sustentación**, para defender el proyecto en una presentación de menos de 10 minutos.
+CreditGuard AI es un agente de inteligencia artificial que **revisa una cartera de préstamos, calcula el riesgo de impago de cada uno y propone qué hacer**. Esta guía explica qué problema resuelve, cómo funciona, cómo usarlo y qué límites tiene.
+
+Material relacionado: [diapositivas](presentacion/CreditGuard_AI.pptx) · [web de resultados](https://claude.ai/artifact/YBHGjcDRAM12batm5ZcSdG).
 
 ---
 
-# Parte 1 · Guía de uso
+## 1. El problema que resuelve
+En muchas empresas, el cobro es **reactivo**: se actúa cuando el impago ya ha ocurrido. La cartera se revisa a mano y el esfuerzo se reparte igual entre préstamos de riesgo muy distinto.
 
-## ¿Qué es CreditGuard AI?
-Un agente de inteligencia artificial que **revisa una cartera de préstamos, calcula el riesgo de impago de cada uno y propone qué hacer**. Trabaja sobre 32.581 préstamos reales guardados en Supabase.
+Las herramientas habituales no resuelven esto del todo:
 
-Para cada préstamo devuelve:
-- Un **score de riesgo de 0 a 100**.
-- Una **categoría**: BAJO, MODERADO o CRÍTICO.
-- Una **acción recomendada**. Las acciones CRÍTICAS nunca se ejecutan solas: quedan **pendientes de autorización humana**.
+| Herramienta | Qué hace | Qué le falta |
+| :--- | :--- | :--- |
+| ERP y contabilidad (SAP, NetSuite…) | Informes estáticos de deuda | Revisión 100 % manual |
+| Automatización de cobros (Chaser, HighRadius…) | Envía avisos según reglas simples | No anticipa el riesgo |
+| Scoring externo (Experian, D&B…) | Da una puntuación de crédito | No dice qué acción tomar |
 
-## ¿Para quién es?
-Para analistas y responsables de riesgo de crédito y cobros que necesitan saber, en minutos, **qué préstamos vigilar primero y qué hacer con cada uno**.
+CreditGuard AI cubre ese hueco: **consulta los datos, puntúa el riesgo de forma explicable y propone la acción**, con una persona aprobando las decisiones importantes.
 
-## ¿Cómo decide?
-El score suma cuatro factores del préstamo:
+Antes de elegir este problema se valoraron otros cuatro: pérdida de clientes en SaaS, retraso de cobro de facturas B2B, previsión de demanda y fraude en pagos. Se eligió el riesgo de impago porque existen datos reales con el resultado conocido, lo que permite comprobar si el sistema acierta. Detalle en [investigacion/problema.md](investigacion/problema.md) y [investigacion/mercado.md](investigacion/mercado.md).
+
+## 2. Los datos
+| Dato | Valor |
+| :--- | :--- |
+| Préstamos | 32.581, reales (Credit Risk Dataset de Kaggle, licencia CC0) |
+| Importe total | 312.431.300 $ |
+| Tasa de impago global | 21,82 % |
+| Dónde están | Supabase (PostgreSQL), tabla `public.credit_risk` |
+
+- **Sin datos personales:** no hay nombres, documentos ni fechas. Cada préstamo se identifica por su `id`.
+- **Calidad revisada:** el 9,6 % de los préstamos no tiene tipo de interés, hay 7 edades imposibles y 165 filas duplicadas. Todo está documentado en [data/diccionario_de_datos.md](data/diccionario_de_datos.md).
+
+## 3. Cómo está construido
+```text
+Usuario ──► Agente CreditGuard ──► MCP de Supabase (consultas SQL, solo lectura) ──► Base de datos
+            (Claude Code)    └──► MCP propio credit-risk ──► Backend + Skill ──► Resultado BI
+Web Streamlit ─────────────────────────────────────────────► Backend + Skill ──► Resultado BI
+```
+
+| Pieza | Para qué sirve |
+| :--- | :--- |
+| **Agente** ([AGENTS.md](AGENTS.md)) | Entiende la pregunta, elige la herramienta y redacta el informe |
+| **MCP de Supabase** | Permite al agente consultar la base de datos con SQL, solo en lectura |
+| **MCP propio `credit-risk`** | Servidor propio, hecho adaptando el SDK oficial de MCP (librería de GitHub), con 3 herramientas: analizar una cartera, puntuar un préstamo y resumir la cartera |
+| **Skill `credit-risk`** | La fórmula que calcula el score de riesgo |
+| **Backend** | Une datos, skill y KPI. Tanto la web como el agente lo usan, por eso dan el mismo resultado |
+| **Web (Streamlit)** | Interfaz para usar el sistema sin escribir preguntas |
+
+## 4. Cómo decide: la Skill
+El **score de riesgo va de 0 a 100** y suma cuatro factores del préstamo:
 
 | Factor | Peso máximo | Qué mide |
 | :--- | ---: | :--- |
@@ -29,7 +58,7 @@ El score suma cuatro factores del préstamo:
 | Impago previo en buró (`cb_person_default_on_file`) | 20 | Si la persona ya tuvo impagos |
 | Grado del préstamo (`loan_grade`) | 20 | Calificación de A (mejor) a G (peor) |
 
-Cada categoría lleva asociada una acción:
+Según el score, el agente propone una acción:
 
 | Score | Categoría | Acción | ¿Requiere autorización? |
 | :--- | :--- | :--- | :--- |
@@ -37,33 +66,57 @@ Cada categoría lleva asociada una acción:
 | 30 - 65 | MODERADO | Congelar ampliación de crédito y plan de pago en 3 cuotas | No |
 | > 65 | CRÍTICO | Suspensión temporal y borrador de reclamación legal | **Sí** |
 
-No usa edad, vivienda ni ningún otro rasgo personal. Tampoco usa el resultado real del préstamo (`loan_status`): ese dato solo sirve para comprobar que el score acierta.
+**Ejemplo:** esfuerzo 0,4, interés 15,2 %, impago previo Sí y grado D dan un score de **76,17**: CRÍTICO.
 
-## Antes de empezar (una sola vez)
-1. Instala las dependencias: `python -m pip install -r requirements.txt`
-2. Copia `.env.example` como `.env` y rellena `DATABASE_URL`.
-3. Comprueba la conexión: `python backend/test_conexion.py`. Debe mostrar 32.581 filas y un 21,82 % de impago.
+- **Qué no usa:** edad, vivienda ni otros rasgos personales, para no decidir el cobro por características de la persona.
+- **Qué usa solo para comprobar:** el resultado real del préstamo (`loan_status`). Nunca entra en el cálculo.
 
-Los detalles están en el [README](README.md).
+El detalle de la fórmula está en [skills/credit-risk/SKILL.md](skills/credit-risk/SKILL.md).
 
-## Opción A · Usar la web (sin escribir nada)
-1. Arranca la web con `python -m streamlit run frontend/app.py`. Se abre en http://localhost:8501.
-2. En el panel izquierdo elige los filtros:
+## 5. ¿Acierta? Resultados con datos reales
+La skill se aplicó a los 32.581 préstamos y se comparó con lo que pasó de verdad:
+
+| Categoría | Préstamos | % de la cartera | Importe | Impago real |
+| :--- | ---: | ---: | ---: | ---: |
+| BAJO | 19.746 | 60,6 % | 161.275.625 $ | 8,2 % |
+| MODERADO | 11.674 | 35,8 % | 132.355.875 $ | 39,8 % |
+| CRÍTICO | 1.161 | 3,6 % | 18.799.800 $ | 72,1 % |
+
+- **Cuanto más alta la categoría, más impagos reales.** En CRÍTICO, la tasa de impago es 3,3 veces la media.
+- **AUC de 0,793:** el score ordena bien el riesgo (0,5 sería azar).
+- **El 77 % de los impagos** cae en MODERADO o CRÍTICO, las dos categorías con acción de cobro.
+
+## 6. Cómo usarlo
+
+### Antes de empezar (una sola vez)
+Los comandos de esta guía se ejecutan en la terminal de VS Code:
+1. Abre la carpeta del proyecto en VS Code: **File → Open Folder** y elige la carpeta que contiene `requirements.txt`.
+2. Abre la terminal: **Terminal → New Terminal** (atajo `` Ctrl+` ``, o `Ctrl+ñ` en teclado español). Se abre ya situada en la carpeta del proyecto.
+3. Instala las dependencias. Pega este comando en la terminal y pulsa Enter:
+   ```powershell
+   python -m pip install -r requirements.txt
+   ```
+4. Copia `.env.example` como `.env` (desde el explorador de VS Code o con `copy .env.example .env` en la terminal), ábrelo y rellena `DATABASE_URL`.
+5. Comprueba la conexión desde la terminal con `python backend/test_conexion.py`. Debe mostrar 32.581 filas y un 21,82 % de impago.
+
+### Opción A · La web
+1. Arranca la web desde la terminal de VS Code con `python -m streamlit run frontend/app.py`. Se abre en el navegador en http://localhost:8501, una dirección de tu propio ordenador que funciona mientras la terminal siga abierta.
+2. Elige los filtros en el panel izquierdo:
    - **Nº de préstamos:** de 1 a 500.
    - **Ordenar por:** mayor importe, mayor tipo de interés, mayor esfuerzo o identificador.
    - **Finalidad** y **Grado** (opcionales).
 3. Pulsa **Analizar cartera**.
-4. Lee los resultados de arriba abajo:
+4. Revisa los resultados:
    - **KPI:** préstamos analizados, importe expuesto, score medio y propuestas pendientes de autorización.
-   - **KPI por categoría:** cuántos préstamos y cuánto importe hay en cada nivel de riesgo, y su tasa de impago real.
-   - **Préstamos priorizados:** tabla ordenada del más arriesgado al menos arriesgado, con la acción sugerida.
-   - **Acciones que requieren autorización:** los CRÍTICOS. Revisa cada uno y pulsa **Autorizar propuesta** si estás de acuerdo.
+   - **KPI por categoría:** préstamos, importe y tasa de impago real en cada nivel de riesgo.
+   - **Préstamos priorizados:** del más arriesgado al menos arriesgado, con su acción.
+   - **Acciones que requieren autorización:** los CRÍTICOS. Pulsa **Autorizar propuesta** en cada uno con el que estés de acuerdo.
 5. Si aparece un aviso amarillo o un error rojo, léelo: el sistema nunca oculta los problemas de datos.
 
-## Opción B · Preguntar al agente en lenguaje natural
+### Opción B · Preguntar al agente
 1. Abre la carpeta del proyecto en Claude Code (VS Code o terminal).
 2. La primera vez, escribe `/mcp` y comprueba que `supabase` y `credit-risk` están conectados.
-3. Haz preguntas como estas:
+3. Pregunta en lenguaje natural:
 
 | Quieres saber… | Pregunta de ejemplo |
 | :--- | :--- |
@@ -72,63 +125,53 @@ Los detalles están en el [README](README.md).
 | Dónde está el riesgo | *"¿Qué finalidad concentra más importe en riesgo CRÍTICO?"* |
 | Un caso concreto | *"Puntúa un préstamo con esfuerzo 0,4, interés 15,2 %, impago previo Sí y grado D."* |
 
-El agente consulta los datos, aplica la skill y responde con tablas, KPI y acciones.
+### Ejemplo de resultado
+Con la pregunta de los **20 préstamos de mayor importe** (700.000 $ en total), el resultado es este:
 
-## Qué no hace (por diseño)
-- **No modifica datos:** las conexiones son de solo lectura. Si le pides borrar o cambiar algo, se niega.
+| Categoría | Préstamos | Importe | Impagos reales |
+| :--- | ---: | ---: | ---: |
+| CRÍTICO | 2 | 70.000 $ | 2 de 2 |
+| MODERADO | 10 | 350.000 $ | 8 de 10 |
+| BAJO | 8 | 280.000 $ | 2 de 8 |
+
+Los 2 CRÍTICOS (`id` 1 y 5) quedan como **propuestas pendientes de autorización**. La web y el agente dan el mismo resultado.
+
+Por finalidad, **Médica** concentra más importe en riesgo crítico (3,52 M$). En **Consolidación de deuda** la etiqueta CRÍTICO acierta más: el 95,9 % de esos préstamos impagó.
+
+## 7. Garantías: pruebas y seguridad
+- **9 de 9 pruebas obligatorias aprobadas:** agente, skill, MCP, base de datos, backend, web, flujo completo, gestión de errores y validación de las cifras. Cada una tiene su evidencia en [tests/pruebas.md](tests/pruebas.md).
+- **24 pruebas automáticas.** Se pueden repetir con los comandos del [README](README.md#pruebas).
+- **No modifica datos:** las conexiones son de solo lectura. Si se le pide borrar o cambiar algo, el agente se niega y la base de datos lo rechazaría igualmente.
 - **No ejecuta acciones críticas** sin que una persona las autorice.
-- **No inventa nombres ni fechas:** el dataset no los tiene; los préstamos se identifican por su `id`.
+- **No inventa nombres ni fechas:** el dataset no los tiene.
+- **Errores encontrados y corregidos:**
+  - La primera versión usaba tablas que no existían; se rediseñó sobre los datos reales.
+  - La clave de la API de Supabase no era válida; se corrigió.
+  - La versión 2.x del SDK de MCP cambió nombres; el código se adaptó.
 
----
-
-# Parte 2 · Guía de sustentación
-
-## Mensaje central (si solo recuerdan una frase)
-> **"CreditGuard AI separa el riesgo de forma fiable: en los préstamos que marca como BAJO solo el 8,2 % acaba en impago; en los CRÍTICOS, el 72,1 %. Y propone qué hacer con cada uno, siempre con una persona aprobando lo crítico."**
-
-## Guion de 10 minutos
-Sigue los 5 bloques que pide la guía del hackathon. Las diapositivas están en [presentacion/CreditGuard_AI.pptx](presentacion/CreditGuard_AI.pptx).
-
-| Min. | Bloque | Qué decir | Apoyo |
-| :--- | :--- | :--- | :--- |
-| 0:00-1:30 | **1. Problema y oportunidad** | Hoy el cobro es reactivo: se actúa cuando el impago ya ha ocurrido. Evaluamos 5 problemas de BI y elegimos este porque tiene datos reales con el resultado conocido, lo que nos permite **validar**. | [problema.md](investigacion/problema.md), [mercado.md](investigacion/mercado.md) |
-| 1:30-3:30 | **2. Arquitectura, Skills, MCP y BD** | Recorrer el flujo: usuario → agente → dos MCP (Supabase oficial y nuestro `credit-risk`) → skill → backend → resultado. Destacar: solo lectura, skill explicable, librería de GitHub adaptada (SDK de MCP). | [Diagrama](investigacion/diagrama_flujo_sistema_agentico.md), [SKILL.md](skills/credit-risk/SKILL.md) |
-| 3:30-6:30 | **3. Demo en directo** | Ver el guion de la demo, abajo. | Streamlit + Claude Code |
-| 6:30-8:30 | **4. Pruebas y errores** | 9/9 pruebas obligatorias aprobadas. Contar un error real y cómo se corrigió (v1 con tablas inexistentes; clave de API). Mostrar la prueba de seguridad. | [pruebas.md](tests/pruebas.md) |
-| 8:30-10:00 | **5. Reflexión** | Un aprendizaje por persona y los 3 compromisos del equipo. | [REFLEXION.md](REFLEXION.md) |
-
-## Guion de la demo (3 minutos)
-1. **Web:** filtros por defecto (20 préstamos, mayor importe) → **Analizar cartera**.
-   - Señalar: 700.000 $ expuestos; 2 CRÍTICOS, 10 MODERADOS y 8 BAJOS.
-   - Pulsar **Autorizar propuesta** en un CRÍTICO: es el control humano.
-2. **Agente:** en Claude Code, preguntar *"¿Qué finalidad concentra más importe en riesgo CRÍTICO?"*.
-   - Respuesta esperada: **MEDICAL** (3,52 M$). DEBTCONSOLIDATION es donde más acierta (95,9 % de impago real).
-3. **Seguridad:** pedir *"Borra los préstamos pagados"*. El agente se niega y la base de datos es de solo lectura.
-4. **Cierre:** la web y el agente dan el **mismo resultado**, porque comparten el mismo backend.
-
-**Plan B si falla la conexión en directo:** abrir la [web de resultados](https://claude.ai/artifact/YBHGjcDRAM12batm5ZcSdG). No depende de Supabase e incluye la tabla de los 20 préstamos y una calculadora del score con la misma fórmula que la skill. Como respaldo, los resultados de los prompts 1 a 4 están en `tests/pruebas.md`.
-
-## Cifras clave para tener a mano
-| Dato | Valor |
+## 8. Límites
+| Límite | Qué implica |
 | :--- | :--- |
-| Préstamos en la cartera | 32.581 |
-| Importe total | 312.431.300 $ |
-| Tasa de impago global | 21,82 % |
-| AUC del score | 0,793 |
-| Impago real: BAJO / MODERADO / CRÍTICO | 8,2 % / 39,8 % / 72,1 % |
-| Préstamos CRÍTICOS | 1.161 (3,6 % de la cartera, 18,8 M$) |
-| Impagos que caen en MODERADO + CRÍTICO | 77 % |
-| Pruebas obligatorias aprobadas | 9 de 9 |
+| Crédito al consumo, no B2B | La lógica sirve para facturas, pero los pesos habría que recalibrarlos |
+| Pesos de criterio experto | Ordenan bien el riesgo, pero no están entrenados con un modelo estadístico |
+| CRÍTICO es preciso, no exhaustivo | Captura el 11,8 % de los impagos; la mayoría (65 %) cae en MODERADO |
+| Datos sin fechas | No se puede medir el DSO ni la evolución en el tiempo |
+| Tipos de interés incompletos | En el 9,6 % de los préstamos se imputa el punto medio, y se avisa |
 
-## Preguntas probables del jurado
-| Pregunta | Respuesta corta |
+**Siguiente mejora prevista:** calibrar los pesos con regresión logística y compararla con la fórmula actual.
+
+## 9. Lo aprendido
+- **Datos primero:** el sistema se diseña sobre lo que hay realmente en la base de datos.
+- **La IA se revisa:** sus resultados se contrastan con consultas directas a los datos.
+- **Persona al mando:** las decisiones duras de cobro siempre las autoriza alguien.
+
+La reflexión completa del equipo está en [REFLEXION.md](REFLEXION.md).
+
+## Preguntas frecuentes
+| Pregunta | Respuesta |
 | :--- | :--- |
-| ¿Por qué una fórmula y no machine learning? | Porque cada score se puede explicar factor a factor a negocio y a un auditor. Aun así, ordena bien el riesgo (AUC 0,793). Calibrarla con regresión logística es el siguiente paso. |
-| ¿Cómo sabéis que el score funciona? | Lo aplicamos a los 32.581 préstamos y lo comparamos con el impago real: la tasa sube de 8,2 % a 72,1 % según la categoría. |
-| CRÍTICO solo detecta el 11,8 % de los impagos, ¿no es poco? | CRÍTICO está pensado para ser **preciso** (72 % de acierto), porque implica acciones duras. La mayoría de impagos (65 %) cae en MODERADO, que activa el plan de 3 cuotas. Juntos cubren el 77 %. |
-| ¿Por qué no usáis la edad u otros datos personales? | Para no decidir el cobro por rasgos de la persona (riesgo de discriminación). Solo usamos variables financieras. |
-| ¿Qué librería de GitHub adaptasteis? | El SDK oficial de MCP para Python: con él construimos nuestro propio servidor MCP, `credit-risk`. También Streamlit para el frontend. |
-| ¿Qué pasa si el agente se equivoca? | No puede escribir en la base de datos y las acciones críticas requieren autorización. El error máximo es una recomendación que una persona revisa. |
-| ¿Sirve para facturas B2B? | La lógica sí; los pesos habría que recalibrarlos. El dataset real disponible era de crédito al consumo. |
-| ¿Qué datos son sintéticos? | Ninguno: los 32.581 préstamos son reales (Kaggle, CC0). |
-| ¿Cuál fue el mayor error? | La primera versión describía tablas que no existían. Lo detectamos al conectar el MCP y rediseñamos la skill sobre los datos reales. |
+| ¿Por qué una fórmula y no un modelo de machine learning? | Porque cada score se explica factor a factor. Aun así, ordena bien el riesgo (AUC 0,793). |
+| ¿Por qué CRÍTICO detecta tan pocos impagos? | Porque implica acciones duras y está pensado para equivocarse poco (72 % de acierto). Los demás impagos de riesgo caen en MODERADO, que activa el plan de 3 cuotas. |
+| ¿Hay datos inventados? | No. Los 32.581 préstamos son reales. |
+| ¿Qué pasa si el agente se equivoca? | No puede escribir en la base de datos y lo crítico requiere autorización, así que un error se queda en una recomendación que revisa una persona. |
+| ¿Sirve para facturas entre empresas? | La lógica sí; los pesos habría que ajustarlos a esos datos. |

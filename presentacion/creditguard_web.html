@@ -245,7 +245,6 @@ footer { color: var(--muted); font-size: .84rem; border-top: 1px solid var(--lin
       <span class="warn" id="warn" hidden></span>
     </div>
   </div>
-  <p class="note">Ejemplo de referencia de la Skill: esfuerzo 0,4 · interés 15,2 % · impago previo Sí · grado D → 76,17 · CRÍTICO.</p>
 </section>
 
 <!-- 7. Cómo funciona -->
@@ -317,7 +316,6 @@ footer { color: var(--muted); font-size: .84rem; border-top: 1px solid var(--lin
 
 <footer>
   <span>CreditGuard AI · Hackathon «Sistemas agénticos para Business Intelligence» · INESDI</span>
-  <span>Cifras extraídas de la documentación del proyecto (problema.md, pruebas.md, SKILL.md, diccionario de datos). Importes en dólares, como en el dataset.</span>
 </footer>
 </div>
 
@@ -357,7 +355,7 @@ document.getElementById("intents").innerHTML = INTENTS.map(([k, n, imp, pct, tas
   return `<div class="bar"><span class="label">${NOMBRE[k]}<small>${esInt(n)} críticos · impago real ${es(tasa, 1)} %</small></span>
     <div class="track"><div class="fill CRITICO" style="width:${w}%;opacity:.85"></div></div></div>
     <div class="bar" style="margin-top:-10px"><span></span><small class="num">${esInt(imp)} $ · ${es(pct, 1)} % del importe crítico</small></div>`;
-}).join("") + `<small>Barras proporcionales al importe crítico; la mayor (Médica) ocupa el ancho completo.</small>`;
+}).join("");
 
 // Réplica exacta de skills/credit-risk/credit_risk.py
 const PUNTOS_GRADO = { A: 0, B: 4, C: 8, D: 14, E: 17, F: 19, G: 20 };

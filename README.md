@@ -12,7 +12,7 @@ Usuario / Interfaz ──► Agente coordinador ──► Skill + MCP + Datos �
 
 ```text
 README.md                      Este archivo
-GUIA.md                        Guía de uso para usuarios y guion de sustentación
+GUIA.md                        Guía de uso: qué hace, cómo funciona, cómo usarlo y sus límites
 AGENTS.md                      Instrucciones del agente coordinador CreditGuard AI
 .env.example                   Variables de entorno necesarias (sin valores reales)
 .mcp.json                      Servidores MCP: supabase (oficial) y credit-risk (propio)
@@ -39,13 +39,13 @@ tests/
   pruebas.md                   Batería de 9 pruebas con resultados y evidencias
   test_*.py                    Pruebas automáticas
 REFLEXION.md                   Reflexión individual y de equipo
-presentacion/CreditGuard_AI.pptx  Diapositivas de la defensa (10 diapositivas, ~10 min)
+presentacion/CreditGuard_AI.pptx  Diapositivas del proyecto
 presentacion/creditguard_web.html Web de resultados para negocio (publicada en claude.ai)
 ```
 
 ¿Primera vez? Empieza por la [guía de uso](GUIA.md).
 
-**Web de resultados para negocio:** [CreditGuard AI en claude.ai](https://claude.ai/artifact/YBHGjcDRAM12batm5ZcSdG) (KPI, demo del agente, calculadora del score y límites; los datos van incrustados en la página). El código fuente está en [presentacion/creditguard_web.html](presentacion/creditguard_web.html). La página es privada hasta que se comparte desde su menú *Share*.
+**Web de resultados:** [CreditGuard AI en claude.ai](https://claude.ai/artifact/YBHGjcDRAM12batm5ZcSdG)
 
 ## Librerías de GitHub adaptadas
 | Librería | Repositorio | Cómo se adapta |

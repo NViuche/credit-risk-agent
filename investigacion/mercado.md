@@ -1,6 +1,5 @@
 # Investigación de Mercado: Monitorización y Alerta Temprana de Riesgo Crediticio e Impagos
 
-> Versión en Markdown de [investigacion_de_mercado.docx](investigacion_de_mercado.docx), con una sección final que la conecta con el dataset que finalmente usamos.
 
 ## 1. Análisis de Mercado y Oportunidad de Negocio
 El incremento global de los tipos de interés y la volatilidad económica han apretado la liquidez de empresas y familias. En sectores como el SaaS, la Fintech y el crédito al consumo, la gestión tradicional del riesgo de crédito es predominantemente **reactiva**: las acciones de cobro o de revisión del crédito empiezan cuando un pago ya lleva entre 30 y 60 días en mora.

@@ -63,9 +63,9 @@
 2. **¿Qué nos llevamos de la experiencia?**
    ✍️
 3. **¿Qué bloqueos tuvimos y cómo los resolvimos?**
-   ✍️ *(Punto de partida: los bloqueos reales listados en el contexto.)*
+   ✍️
 4. **¿Cómo hemos decidido, escuchado y cuestionado a la IA?**
-   ✍️ *(Ejemplos para debatir: la IA propuso tablas que no existían y lo detectamos al conectar el MCP; validamos sus cifras con SQL directo; rechazamos dejar que se autoaprobara permisos.)*
+   ✍️
 5. **¿Qué haríamos distinto si empezáramos de nuevo?**
    ✍️
 
