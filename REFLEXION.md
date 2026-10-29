@@ -33,27 +33,27 @@
 
 ### Integrante: Sofía Montero Jara
 1. **¿Qué he aprendido?**
-   Que otra pagina que es similar a supabase que se llama neon y que se puede utilizar gratis
+   He aprendido que existen alternativas a Supabase, como Neon, que ofrece una opción para trabajar con bases de datos de forma gratuita. Esto me ha permitido conocer otras herramientas que podemos utilizar en nuestros proyectos de análisis de datos.
 2. **¿Qué me llevo y cómo lo aplicaré?**
-   Me llevo que que se pueden conseguir bases de datos confiables en kaggle, también como hacer la vinculación con neon y visual studios, lo puedo aplicar para futuros proyectos de análisis de datos y para practicar casos de GitHub
+   Me llevo el aprendizaje de cómo encontrar bases de datos útiles y confiables en Kaggle, así como el proceso de conexión de Neon con Visual Studio Code. Estos conocimientos podré aplicarlos en futuros proyectos de análisis de datos y en la práctica de casos disponibles en GitHub.
 3. **¿Dónde me he bloqueado y cómo lo he afrontado?**
-   Nos bloqueamos con la unión de supabase con Visual Code nos da error, primero empezamos a buscar otras opciones como neon pero mientras se ejecutaba la conexión con neon un compañero reviso el error y nos ayudó a solucionar
+   Nos encontramos con un problema al intentar conectar Supabase con Visual Studio Code, ya que se producía un error. Inicialmente, buscamos alternativas, como Neon, para poder continuar con el proyecto. Mientras intentábamos establecer la nueva conexión, un compañero revisó el error original y nos ayudó a solucionarlo. Esta experiencia nos enseñó la importancia de explorar otras opciones sin dejar de investigar la causa del problema inicial.
 4. **¿Qué he aportado al equipo?**
-   He aportado creando las estructuras en mi gemini, para solo ejecutarlas en claude y asi ahorrar tokens
+   He contribuido preparando las estructuras e instrucciones en Gemini para ejecutarlas posteriormente en Claude, con el objetivo de optimizar el uso de tokens. También he buscado bases de datos en Kaggle que pudieran ser útiles para el proyecto y he ayudado a mantener el seguimiento de las tareas, identificando qué actividades estaban pendientes para procurar que no quedara ninguna sin completar.
 5. **¿Qué haría diferente la próxima vez?**
-   ✍️
+   La próxima vez organizaría el trabajo para que pudiéramos avanzar desde ambos ordenadores en paralelo, en lugar de concentrar todo el desarrollo en uno solo. Cuando surgió el problema de conexión entre Supabase y Visual Studio Code, perdimos bastante tiempo intentando resolverlo y el avance del proyecto se detuvo. Si hubiéramos trabajado simultáneamente en ambos equipos, podríamos haber continuado con otras tareas mientras solucionábamos el error, aprovechando mejor el tiempo y reduciendo los bloqueos.
 
 ### Integrante: Santiago Nicolas Viuche Pinilla
 1. **¿Qué he aprendido?**
-   ✍️
+   Integrar bases de datos subidas en la nube con VS y trabajando con el LLM de Claude, específicamente con Supabase, así aprender uso puntual del archivos JSON para el llamado de credenciales y posterior manejo de bases de datos
 2. **¿Qué me llevo y cómo lo aplicaré?**
-   ✍️
+   Me llevo el conocimiento de la conectividad entre VS con Supabase, así como haber aprendido a habilitar MCP desde VS y posterior maneja tras reinicio de ventanas.
 3. **¿Dónde me he bloqueado y cómo lo he afrontado?**
-   ✍️
+   En la implementación de Supabase, debido a que era una herramienta y propósito (llamado a BD en la nube) que no había usado antes en VS, por lo que presento bastantes trabas desde la subida de la BD hasta la conectividad con VS, que se termino consiguiendo.
 4. **¿Qué he aportado al equipo?**
-   ✍️
+   Aporte montar el agente en VS y posterior trabajo en Claude a la par con el apoyo de Gemini del equipo, optimizando tokens y evitando reprocesos, así como la organización del proyecto/agente y posterior subida a GitHub
 5. **¿Qué haría diferente la próxima vez?**
-   ✍️
+   Verificar documentación, instrucciones del LLM y pasos para la implementación de complementos.
 
 ---
 
