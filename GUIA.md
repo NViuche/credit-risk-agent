@@ -118,12 +118,12 @@ Los comandos de esta guía se ejecutan en la terminal de VS Code:
 2. La primera vez, escribe `/mcp` y comprueba que `supabase` y `credit-risk` están conectados.
 3. Pregunta en lenguaje natural:
 
-| Quieres saber… | Pregunta de ejemplo |
-| :--- | :--- |
-| La foto general | *"¿Cuántos préstamos hay y cuál es la tasa de impago por grado?"* |
+| Quieres saber…         | Pregunta de ejemplo                                                                     |
+| :--------------------- | :-------------------------------------------------------------------------------------- |
+| La foto general        | *"¿Cuántos préstamos hay y cuál es la tasa de impago por grado?"*                       |
 | Qué hacer con un grupo | *"Analiza el riesgo de impago de los 20 préstamos de mayor importe y propón acciones."* |
-| Dónde está el riesgo | *"¿Qué finalidad concentra más importe en riesgo CRÍTICO?"* |
-| Un caso concreto | *"Puntúa un préstamo con esfuerzo 0,4, interés 15,2 %, impago previo Sí y grado D."* |
+| Dónde está el riesgo   | *"¿Qué finalidad concentra más importe en riesgo CRÍTICO?"*                             |
+| Un caso concreto       | *"Puntúa un préstamo con esfuerzo 0,4, interés 15,2 %, impago previo Sí y grado D."*    |
 
 ### Ejemplo de resultado
 Con la pregunta de los **20 préstamos de mayor importe** (700.000 $ en total), el resultado es este:
